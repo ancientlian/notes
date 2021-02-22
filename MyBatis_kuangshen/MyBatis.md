@@ -511,3 +511,163 @@ select * from mybatis.user where name like concat('%',#{value},'%')
 
 
 ## 配置解析
+
+MyBatis 可以配置成适应多种环境，这种机制有助于将 SQL 映射应用于多种数据库之中， 现实情况下有多种理由需要这么做。例如，开发、测试和生产环境需要有不同的配置；或者想在具有相同 Schema 的多个生产数据库中使用相同的 SQL 映射
+
+**不过要记住：尽管可以配置多个环境，但每个 SqlSessionFactory 实例只能选择一种环境。**
+
+### **属性（properties）**
+
+这些属性可以在外部进行配置，并可以进行动态替换。
+
+编写一个配置文件`db.properties`
+
+```xml
+driver = com.mysql.cj.jdbc.Driver
+url =jdbc:mysql://localhost/mybatis?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&useSSL=true
+username = root
+password = 123456
+```
+
+在核心配置文件中映入
+
+```xml
+<properties resource="org/mybatis/example/config.properties">
+    <property name="username" value="dev_user"/>
+    <property name="password" value="F2Fa3!33TYyg"/>
+</properties>
+```
+
+- 可以直接引入外部文件
+- 还可以额外增加一些属性配置
+- 如果两个文件同有一个字段，优先使用外部resource的字段
+
+### 类型别名（typeAliases）
+
+类型别名可为 Java 类型设置一个缩写名字。 它仅用于 XML 配置，意在降低冗余的全限定类名书写。
+
+1、
+
+```xml
+<typeAliases>
+  <typeAlias alias="Author" type="domain.blog.Author"/>
+  <typeAlias alias="Blog" type="domain.blog.Blog"/>
+  <typeAlias alias="Comment" type="domain.blog.Comment"/>
+  <typeAlias alias="Post" type="domain.blog.Post"/>
+  <typeAlias alias="Section" type="domain.blog.Section"/>
+  <typeAlias alias="Tag" type="domain.blog.Tag"/>
+</typeAliases>
+```
+
+2、指定一个包名，MyBatis 会在包名下面搜索需要的 Java Bean
+
+扫描实体类的包，他的默认别名就为这个类的类名，**首字母小写**，当然要是真的大写了也是不会错的。
+
+```xml
+<typeAliases>
+  <package name="domain.blog"/>
+</typeAliases>
+```
+
+
+
+注：
+
+在实体类比较少的时候，使用第一种方式。
+
+如果实体类十分多，适合第二种方式
+
+第一种可以自己设置别名，第二种不行但是可以加注解
+
+优先级：`<typeAliases>` > 注解`@Alias("author")`>扫描包`<package name="domain.blog"/>`
+
+`type="[JDBC|MANAGED]"`
+
+### **数据源（dataSource）**
+
+有三种内建的数据源类型（也就是 type="[UNPOOLED|POOLED|JNDI]"）
+
+
+
+### 设置（settings）
+
+| 设置名             | 描述                                                         | 有效值                                                       | 默认值 |
+| :----------------- | :----------------------------------------------------------- | :----------------------------------------------------------- | :----- |
+| cacheEnabled       | 全局性地开启或关闭所有映射器配置文件中已配置的任何缓存。     | true \| false                                                | true   |
+| lazyLoadingEnabled | 延迟加载的全局开关。当开启时，所有关联对象都会延迟加载。 特定关联关系中可通过设置 `fetchType` 属性来覆盖该项的开关状态。 | true \| false                                                | false  |
+| logImpl            | 指定 MyBatis 所用日志的具体实现，未指定时将自动查找。        | SLF4J \| LOG4J \| LOG4J2 \| JDK_LOGGING \| COMMONS_LOGGING \| STDOUT_LOGGING \| NO_LOGGING | 未设置 |
+|                    |                                                              |                                                              |        |
+
+
+
+### 其他配置
+
+#### [typeHandlers（类型处理器）](https://mybatis.org/mybatis-3/zh/configuration.html#typeHandlers)
+
+#### [objectFactory（对象工厂）](https://mybatis.org/mybatis-3/zh/configuration.html#objectFactory)
+
+#### [plugins（插件）](https://mybatis.org/mybatis-3/zh/configuration.html#plugins)
+
+一些插件
+
+
+
+### 映射器（mappers）
+
+1、【推荐】
+
+```xml
+<!-- 使用相对于类路径的资源引用 -->
+<mappers>
+  <mapper resource="org/mybatis/builder/AuthorMapper.xml"/>
+  <mapper resource="org/mybatis/builder/BlogMapper.xml"/>
+  <mapper resource="org/mybatis/builder/PostMapper.xml"/>
+</mappers>
+```
+2、
+
+```xml
+<!-- 使用完全限定资源定位符（URL） -->
+<mappers>
+  <mapper url="file:///var/mappers/AuthorMapper.xml"/>
+  <mapper url="file:///var/mappers/BlogMapper.xml"/>
+  <mapper url="file:///var/mappers/PostMapper.xml"/>
+</mappers>
+```
+
+3、使用class
+
+```XML
+<!-- 使用映射器接口实现类的完全限定类名 -->
+<mappers>
+  <mapper class="org.mybatis.builder.AuthorMapper"/>
+  <mapper class="org.mybatis.builder.BlogMapper"/>
+  <mapper class="org.mybatis.builder.PostMapper"/>
+</mappers>
+```
+注意点：
+
+- 接口和他的Mapper配置文件必须同名
+- 接口和他的Mapper配置文件必须在同一个包下面
+
+
+
+4、扫描包
+
+```xml
+<!-- 将包内的映射器接口实现全部注册为映射器 -->
+<mappers>
+  <package name="org.mybatis.builder"/>
+</mappers>
+```
+
+注意点：
+
+- 接口和他的Mapper配置文件必须同名
+- 接口和他的Mapper配置文件必须在同一个包下面
+
+练习：
+
+- 数据库配置文件外部引入
+- 实体类别名
+- 保证UserMapper.xml和UserMapper接口名字一致，并且在同一个包下面（其实也可以在resourse中建立和类相同路径，这是结构底层原理）
