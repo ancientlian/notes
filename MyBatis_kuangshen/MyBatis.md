@@ -1,3 +1,5 @@
+# Mybatis
+
 ## 持久化
 
 数据持久化
@@ -671,3 +673,576 @@ password = 123456
 - 数据库配置文件外部引入
 - 实体类别名
 - 保证UserMapper.xml和UserMapper接口名字一致，并且在同一个包下面（其实也可以在resourse中建立和类相同路径，这是结构底层原理）
+
+
+
+## 作用域（Scope）和生命周期
+
+理解我们之前讨论过的不同作用域和生命周期类别是至关重要的，因为错误的使用会导致非常严重的**并发问题**。
+
+### SqlSessionFactoryBuilder
+
+- 一旦创建了 SqlSessionFactory，就不再需要它了
+- 局部变量
+
+### SqlSessionFactory
+
+- 类似数据库连接池
+-  一旦被创建就应该在应用的运行期间一直存在，没有任何理由丢弃它或重新创建另一个实例
+- 不要重复创建多次，多次重建 SqlSessionFactory 被视为一种代码”坏习惯“
+- 最简单的就是使用单例模式或者静态单例模式
+
+### SqlSession
+
+- 每个线程都应该有它自己的 SqlSession 实例（连接到连接池的请求）
+- SqlSession 的实例不是线程安全的，因此是不能被共享的，所以它的**最佳的作用域是请求或方法作用域**
+- 用完之后需要赶紧关闭，否则资源会被占用
+
+![20200620203805956](MyBatis.assets/20200620203805956.png)
+
+![20200620203824306](MyBatis.assets/20200620203824306.png)
+
+每一个apper代表一个具体的业务
+
+## 结果映射：解决属性名和字段名不一致的问题
+
+当数据库中的字段为
+
+![image-20210223111304340.png](https://i.loli.net/2021/02/23/1UMAGN5g6KwxbcH.png)
+
+此时如果创建的实体类为：
+
+```java
+public class User {
+    private int id;
+    private String name;
+    private String password;
+	……
+}
+```
+
+测试之后就会出现password查找为null的问题：
+
+```java
+D:\Java\jdk-11.0.9\bin\java.exe...
+User{id=1, name='alice', password='null'}
+
+Process finished with exit code 0
+```
+
+sql查询的本质实则是这两句
+
+```sql
+select * from mybatis.user where id = #{id}
+select id, name, pwd from mybatis.user where id = #{id}
+```
+
+因为sql的pwd和类的password不对应所以出现了这种问题。
+
+解决方法
+
+1、起别名
+
+如果列名和属性名不能匹配上，可以在 SELECT 语句中设置列别名（这是一个基本的 SQL 特性）来完成匹配。比如：
+
+```xml
+<select id="selectUsers" resultType="User">
+  select
+    user_id             as "id",
+    user_name           as "userName",
+    hashed_password     as "hashedPassword"
+  from some_table
+  where id = #{id}
+</select>
+```
+
+
+
+### resultMap：第二种解决方式
+
+结果集映射，你完全可以不用显式地配置它们，当然也可以显式使用外部的 `resultMap` 。==注意我们去掉了 `resultType` 属性==
+
+```xml
+<!--结果集映射-->
+<resultMap id="UserMap" type="User">
+    <!--column 数据库中的字段 property 实体类中的属性-->
+    <result column="id" property="id"/>
+    <result column="name" property="name"/>
+    <result column="pwd" property="password"/>
+</resultMap>
+
+<!--by id-->
+<select id="getUserById" parameterType="int" resultMap="UserMap">
+    select * from mybatis.user where id = #{id}
+</select>
+```
+
+`resultMap` 元素是 MyBatis 中最重要最强大的元素。它可以让你从 90% 的 JDBC `ResultSets` 数据提取代码中解放出来，并在一些情形下允许你进行一些 JDBC 不支持的操作。
+
+ResultMap 的设计思想是，对简单的语句做到零配置，对于复杂一点的语句，只需要描述语句之间的关系就行了。
+
+==如果这个世界总是这么简单就好了。==
+
+### 高级结果映射
+
+
+
+
+
+## 日志
+
+### 日志工厂
+
+如果一一个数据库操作，出现了异常,我们需要排错。日志就是最好的助手！
+曾经： sout、 debug
+现在：日志工厂！
+
+| 设置名  | 描述                                                  | 有效值                                                       | 默认值 |
+| ------- | ----------------------------------------------------- | ------------------------------------------------------------ | ------ |
+| logImpl | 指定 MyBatis 所用日志的具体实现，未指定时将自动查找。 | SLF4J \| LOG4J \| LOG4J2 \| JDK_LOGGING \| COMMONS_LOGGING \| STDOUT_LOGGING \| NO_LOGGING | 未设置 |
+|         |                                                       |                                                              |        |
+
+- SLF4J
+- LOG4J【掌握】
+- LOG4J2
+- JDK_LOGGING
+- COMMONS_LOGGING
+- STDOUT_LOGGING【掌握】
+- NO_LOGGING
+
+具体使用哪一个日志在settings中进行设置
+
+```xml
+<settings>
+    <setting name="logImpl" value="STDOUT_LOGGING"/><!--多一个空格，大小写都会报错-->
+</settings>
+```
+
+
+
+#### STDOUT_LOGGING日志输出
+
+```java
+Opening JDBC Connection
+Created connection 1634723627.
+Setting autocommit to false on JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@616fe72b]
+==>  Preparing: select * from mybatis.user where id = ?
+==> Parameters: 1(Integer)
+<==    Columns: id, name, pwd
+<==        Row: 1, alice, 12345
+<==      Total: 1
+User{id=1, name='alice', password='12345'}
+Resetting autocommit to true on JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@616fe72b]
+Closing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@616fe72b]
+Returned connection 1634723627 to pool.
+
+Process finished with exit code 0
+```
+
+
+
+#### LOG4J日志输出
+
+1、导入maven配置
+
+```xml
+<!-- https://mvnrepository.com/artifact/log4j/log4j -->
+<dependency>
+    <groupId>log4j</groupId>
+    <artifactId>log4j</artifactId>
+    <version>1.2.17</version>
+</dependency>
+```
+
+2、配置文件
+
+```xml
+#将等级为DEBUG的日志信息输出到console和file这两个目的地，console和file的定义在下面的代码
+log4j.rootLogger=DEBUG,console,file
+
+#控制台输出的相关设置
+log4j.appender.console = org.apache.log4j.ConsoleAppender
+log4j.appender.console.Target = System.out
+log4j.appender.console.Threshold=DEBUG
+log4j.appender.console.layout = org.apache.log4j.PatternLayout
+log4j.appender.console.layout.ConversionPattern=[%c]-%m%n
+
+#文件输出的相关设置
+log4j.appender.file = org.apache.log4j.RollingFileAppender
+log4j.appender.file.File=./log/lian.log
+log4j.appender.file.MaxFileSize=10mb
+log4j.appender.file.Threshold=DEBUG
+log4j.appender.file.layout=org.apache.log4j.PatternLayout
+log4j.appender.file.layout.ConversionPattern=[%p][%d{yy-MM-dd}][%c]%m%n
+
+#日志输出级别
+log4j.logger.org.mybatis=DEBUG
+log4j.logger.java.sql=DEBUG
+log4j.logger.java.sql.Statement=DEBUG
+log4j.logger.java.sql.ResultSet=DEBUG
+log4j.logger.java.sql.PreparedStatement=DEBUG
+```
+
+```html
+log4j.rootLogger=INFO,consoleAppender,logfile,MAIL
+log4j.addivity.org.apache=true
+#ConsoleAppender，控制台输出
+#FileAppender，文件日志输出
+#SMTPAppender，发邮件输出日志
+#SocketAppender，Socket 日志
+#NTEventLogAppender，Window NT 日志
+#SyslogAppender，
+#JMSAppender，
+#AsyncAppender，
+#NullAppender
+#文件输出：RollingFileAppender
+#log4j.rootLogger = INFO,logfile
+log4j.appender.logfile = org.apache.log4j.RollingFileAppender
+log4j.appender.logfile.Threshold = INFO
+# 输出以上的 INFO 信息
+log4j.appender.logfile.File = INFO_log.html
+#保存 log 文件路径
+log4j.appender.logfile.Append = true
+# 默认为 true，添加到末尾，false 在每次启动时进行覆盖
+log4j.appender.logfile.MaxFileSize = 1MB
+# 一个 log 文件的大小，超过这个大小就又会生成 1 个日志 # KB ，MB，GB
+log4j.appender.logfile.MaxBackupIndex = 3
+# 最多保存 3 个文件备份
+log4j.appender.logfile.layout = org.apache.log4j.HTMLLayout
+# 输出文件的格式
+log4j.appender.logfile.layout.LocationInfo = true
+#是否显示类名和行数
+log4j.appender.logfile.layout.Title=title:\u63d0\u9192\u60a8\uff1a\u7cfb\u7edf\u53d1\u751f\u4e86\u4e25\u91cd\u9519\u8bef
+#html 页面的 < title >
+############################## SampleLayout ####################################
+# log4j.appender.logfile.layout = org.apache.log4j.SampleLayout
+############################## PatternLayout ###################################
+# log4j.appender.logfile.layout = org.apache.log4j.PatternLayout
+# log4j.appender.logfile.layout.ConversionPattern =% d % p [ % c] - % m % n % d
+############################## XMLLayout #######################################
+# log4j.appender.logfile.layout = org.apache.log4j.XMLLayout
+# log4j.appender.logfile.layout.LocationInfo = true #是否显示类名和行数
+############################## TTCCLayout ######################################
+# log4j.appender.logfile.layout = org.apache.log4j.TTCCLayout
+# log4j.appender.logfile.layout.DateFormat = ISO8601
+#NULL, RELATIVE, ABSOLUTE, DATE or ISO8601.
+# log4j.appender.logfile.layout.TimeZoneID = GMT - 8 : 00
+# log4j.appender.logfile.layout.CategoryPrefixing = false ##默认为 true 打印类别名
+# log4j.appender.logfile.layout.ContextPrinting = false ##默认为 true 打印上下文信息
+# log4j.appender.logfile.layout.ThreadPrinting = false ##默认为 true 打印线程名
+# 打印信息如下：
+#2007 - 09 - 13 14 : 45 : 39 , 765 [http - 8080 - 1 ] ERROR com.poxool.test.test -error 成功关闭链接
+###############################################################################
+#每天文件的输出：DailyRollingFileAppender
+#log4j.rootLogger = INFO,errorlogfile
+log4j.appender.errorlogfile = org.apache.log4j.DailyRollingFileAppender
+log4j.appender.errorlogfile.Threshold = ERROR
+log4j.appender.errorlogfile.File = ../logs/ERROR_log
+log4j.appender.errorlogfile.Append = true
+#默认为 true，添加到末尾，false 在每次启动时进行覆盖
+log4j.appender.errorlogfile.ImmediateFlush = true
+#直接输出，不进行缓存
+# ' . ' yyyy - MM: 每个月更新一个 log 日志
+# ' . ' yyyy - ww: 每个星期更新一个 log 日志
+# ' . ' yyyy - MM - dd: 每天更新一个 log 日志
+# ' . ' yyyy - MM - dd - a: 每天的午夜和正午更新一个 log 日志
+# ' . ' yyyy - MM - dd - HH: 每小时更新一个 log 日志
+# ' . ' yyyy - MM - dd - HH - mm: 每分钟更新一个 log 日志
+
+log4j.appender.errorlogfile.DatePattern = ' . ' yyyy - MM - dd ' .log '
+#文件名称的格式
+log4j.appender.errorlogfile.layout = org.apache.log4j.PatternLayout
+log4j.appender.errorlogfile.layout.ConversionPattern =%d %p [ %c] - %m %n %d
+#控制台输出：
+#log4j.rootLogger = INFO,consoleAppender
+log4j.appender.consoleAppender = org.apache.log4j.ConsoleAppender
+log4j.appender.consoleAppender.Threshold = ERROR
+log4j.appender.consoleAppender.layout = org.apache.log4j.PatternLayout
+log4j.appender.consoleAppender.layout.ConversionPattern =%d %-5p %m %n
+log4j.appender.consoleAppender.ImmediateFlush = true
+# 直接输出，不进行缓存
+log4j.appender.consoleAppender.Target = System.err
+# 默认是 System.out 方式输出
+#发送邮件：SMTPAppender
+#log4j.rootLogger = INFO,MAIL
+log4j.appender.MAIL = org.apache.log4j.net.SMTPAppender
+log4j.appender.MAIL.Threshold = INFO
+log4j.appender.MAIL.BufferSize = 10
+log4j.appender.MAIL.From = yourmail@gmail.com
+log4j.appender.MAIL.SMTPHost = smtp.gmail.com
+log4j.appender.MAIL.Subject = Log4J Message
+log4j.appender.MAIL.To = yourmail@gmail.com
+log4j.appender.MAIL.layout = org.apache.log4j.PatternLayout
+log4j.appender.MAIL.layout.ConversionPattern =%d - %c -%-4r [%t] %-5p %c %x - %m %n
+#数据库：JDBCAppender
+log4j.appender.DATABASE = org.apache.log4j.jdbc.JDBCAppender
+log4j.appender.DATABASE.URL = jdbc:oracle:thin:@ 210.51 . 173.94 : 1521 :YDB
+log4j.appender.DATABASE.driver = oracle.jdbc.driver.OracleDriver
+log4j.appender.DATABASE.user = ydbuser
+log4j.appender.DATABASE.password = ydbuser
+log4j.appender.DATABASE.sql = INSERT INTO A1 (TITLE3) VALUES ( ' %d - %c %-5p %c %x - %m%n' )
+log4j.appender.DATABASE.layout = org.apache.log4j.PatternLayout
+log4j.appender.DATABASE.layout.ConversionPattern =% d - % c -%- 4r [ % t] %- 5p % c %x - % m % n
+#数据库的链接会有问题，可以重写 org.apache.log4j.jdbc.JDBCAppender 的 getConnection() 使用数据库链接池去得链接，可以避免 insert 一条就链接一次数据库
+
+```
+
+3、配置log4j为日志的实现
+
+```xml
+<settings>
+    <setting name="logImpl" value="LOG4J"/><!--多一个空格，大小写都会报错-->
+</settings>
+```
+
+4、使用结果
+
+```java
+[org.apache.ibatis.logging.LogFactory]-Logging initialized using 'class org.apache.ibatis.logging.log4j.Log4jImpl' adapter.
+[org.apache.ibatis.logging.LogFactory]-Logging initialized using 'class org.apache.ibatis.logging.log4j.Log4jImpl' adapter.
+[org.apache.ibatis.datasource.pooled.PooledDataSource]-PooledDataSource forcefully closed/removed all connections.
+[org.apache.ibatis.datasource.pooled.PooledDataSource]-PooledDataSource forcefully closed/removed all connections.
+[org.apache.ibatis.datasource.pooled.PooledDataSource]-PooledDataSource forcefully closed/removed all connections.
+[org.apache.ibatis.datasource.pooled.PooledDataSource]-PooledDataSource forcefully closed/removed all connections.
+[org.apache.ibatis.transaction.jdbc.JdbcTransaction]-Opening JDBC Connection
+[org.apache.ibatis.datasource.pooled.PooledDataSource]-Created connection 2072130509.
+[org.apache.ibatis.transaction.jdbc.JdbcTransaction]-Setting autocommit to false on JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@7b8233cd]
+[com.lian.dao.UserMapper.getUserById]-==>  Preparing: select * from mybatis.user where id = ?
+[com.lian.dao.UserMapper.getUserById]-==> Parameters: 1(Integer)
+[com.lian.dao.UserMapper.getUserById]-<==      Total: 1
+User{id=1, name='alice', password='12345'}
+[org.apache.ibatis.transaction.jdbc.JdbcTransaction]-Resetting autocommit to true on JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@7b8233cd]
+[org.apache.ibatis.transaction.jdbc.JdbcTransaction]-Closing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@7b8233cd]
+[org.apache.ibatis.datasource.pooled.PooledDataSource]-Returned connection 2072130509 to pool.
+
+Process finished with exit code 0
+
+```
+
+##### 简单使用
+
+1、导包
+
+```java
+import org.apache.log4j.Logger;
+```
+
+2、日志对象，参数为当前类的class
+
+```java
+static Logger logger = Logger.getLogger(Test.class);
+```
+
+3、日志级别
+
+```java
+// 记录info级别的信息
+logger.info("This is info message.");
+// 记录debug级别的信息
+logger.debug("This is debug message.");
+// 记录error级别的信息
+logger.error("This is error message.");
+```
+
+
+
+## 分页
+
+### 使用limit分页
+
+```sql
+select * from mybatis.user limit #{startIndex}, #{pageSize}
+```
+
+
+
+使用mybatis实现分页，核心SQL
+
+1、接口
+
+```java
+//limit
+List<User> getUserByLimit(Map<String, Integer> map);
+```
+
+2、Mapper.xml
+
+```xml
+<!--limit-->
+<select id="getUserByLimit" parameterType="map" resultMap="UserMap">
+    select * from mybatis.user limit #{startIndex}, #{pageSize}
+</select>
+```
+
+3、测试
+
+```java
+@Test
+public void getUserByLimit(){
+    SqlSession sqlSession = MyBatisUtils.getsqlSession();
+    UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+    HashMap<String, Integer> map = new HashMap<>();
+    map.put("startIndex", 0);
+    map.put("pageSize", 2);
+
+    List<User> userlist= mapper.getUserByLimit(map);
+    for (User user : userlist) {
+        System.out.println(user);
+    }
+    sqlSession.close();
+}
+```
+
+
+
+### RowBounds分页
+
+1、接口
+
+```java
+//RowBounds
+List<User> getUserByRowBounds(Map<String, Integer> map);
+```
+
+2、mapper.xml
+
+```xml
+<!--rowBounds-->
+<select id="getUserByRowBounds" resultMap="UserMap">
+    select * from mybatis.user
+</select>
+```
+
+3、测试
+
+```java
+@Test
+public  void  getUserByRowBounds(){
+    SqlSession sqlSession = MyBatisUtils.getsqlSession();
+    //RowBands实现
+    RowBounds rowBounds = new RowBounds(1, 2);
+
+    //通过java 代码层面实现分页
+    List<Object> userList = sqlSession.selectList("com.lian.dao.UserMapper.getUserByRowBounds", null, rowBounds);
+
+    for (Object object : userList) {
+        System.out.println(object);
+    }
+    sqlSession.close();
+}
+```
+
+
+
+### 分页插件
+
+pagehelper
+
+
+
+## 注解开发
+
+### 面向接口编程
+
+- 大家之前都学过面向对象编程，也学习过接口，但在真正的开发中，很多时候我们会选择面向接口编程
+- **根本原因：==解耦==,可拓展,提高复用,分层开发中,上层不用管具体的实现,大家都遵守共同的标准,使得开发变得容易,规范性更好**
+- 在一个面向对象的系统中，系统的各种功能是由许许多多的不同对象协作完成的。在这种情况下，各个对象内部是如何实现自己的,对系统设计人员来讲就不那么重要了;
+- 而各个对象之间的协作关系则成为系统设计的关键。小到不同类之间的通信，大到各模块之间的交互，在系统设计之初都是要着重考虑的,这也是系统设计的主要工作内容。面向接口编程就是指按照这种思想来编程。
+
+#### 关于接口的理解
+
+- 接口从更深层次的理解，应是定义(规范,约束)与实现(名实分离的原则)的分离。
+- 接口的本身反映了系统设计人员对系统的抽象理解。
+- 接口应有两类:
+  - 第一类是对一个个体的抽象，它可对应为-一个抽象体(abstract class);
+  - 第二类是对一个个体某- 方面的抽象，即形成一个抽象面(interface) ; 
+
+- 一个体有可能有多个抽象面。抽象体与抽象面是有区别的。
+
+#### 三个面向区别
+
+- 面向对象是指,我们考虑问题时，以对象为单位，考虑它的属性及方法.
+- 面向过程是指,我们考虑问题时，以一个具体的流程(事务过程)为单位,考虑它的实现.
+- 接口设计与非接口设计是针对复用技术而言的，与面向对象(过程)不是一一个问题.更多的体现就是对系统整体的架构
+
+
+
+---
+
+### 使用注解开发
+
+对于像 BlogMapper 这样的映射器类来说，还有另一种方法来完成语句映射。 它们映射的语句可以不用 XML 来配置，而可以使用 Java 注解来配置。比如，上面的 XML 示例可以被替换成如下的配置：
+
+```java
+package org.mybatis.example;
+public interface BlogMapper {
+  @Select("SELECT * FROM blog WHERE id = #{id}")
+  Blog selectBlog(int id);
+}
+```
+
+使用注解来映射简单语句会使代码显得更加简洁，但对于稍微复杂一点的语句，Java 注解不仅力不从心，还会让你本就复杂的 SQL 语句更加混乱不堪。 因此，如果你需要做一些很复杂的操作，最好用 XML 来映射语句。
+
+选择何种方式来配置映射，以及认为是否应该要统一映射语句定义的形式，完全取决于你和你的团队。 换句话说，永远不要拘泥于一种方式，你可以很轻松的在基于注解和 XML 的语句映射方式间自由移植和切换。
+
+1、注解在接口上实现
+
+```java
+public interface UserMapper {
+
+    @Select("select * from user")
+    List<User> getUsers();
+
+}
+```
+
+2、在核心配置文件中绑定接口
+
+```xml
+<!--绑定接口-->
+<mappers>
+    <mapper class="com.lian.dao.UserMapper"/>
+</mappers>
+```
+
+3、测试
+
+```java
+@Test
+public void getUserByLimit(){
+    SqlSession sqlSession = MyBatisUtils.getsqlSession();
+    //底层主要使用反射
+    UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+    List<User> users = mapper.getUsers();
+    for (User user : users) {
+        System.out.println(user);
+    }
+    sqlSession.close();
+}
+```
+
+
+
+#### 注解实现CRUD
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## mybatis执行流程（源码解析）
+
+![img](MyBatis.assets/c1a33ceb3ff7bcd34021c0d5dc3dbc6a.png)
