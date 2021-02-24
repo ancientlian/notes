@@ -1225,6 +1225,88 @@ public void getUserByLimit(){
 
 #### 注解实现CRUD
 
+1、我们可以在工具类创建的时候实现自动提交的事务
+
+```java
+public static SqlSession getsqlSession() {
+    //设置事务为true 之后可以不用手动commit
+    return sqlSessionFactory.openSession(true);
+}
+```
+
+2、编写接口，增加注解
+
+```java
+public interface UserMapper {
+
+    @Select("select * from user")
+    List<User> getUsers();
+
+    //方法存在多个参数，所有的参数前面必须加上@Param("")注解，
+    // 语句查询的其实是@Param("")内的名字
+    @Select("select * from user where id = #{id}")
+    User getUserById(@Param("id") int id);
+
+    @Insert("insert into user(id, name, pwd) VALUES(#{id}, #{name}, #{password})")
+    int addUser(User user);
+
+    @Update("update user set name = #{name}, pwd = #{password} where id = #{id}")
+    int updateUser(User user);
+
+    @Delete("delete from user where id = #{pid}")
+    int deleteUser(@Param("pid") int id);
+
+}
+```
+
+3、测试类
+
+```java
+@Test
+public void getUserByLimit(){
+    SqlSession sqlSession = MyBatisUtils.getsqlSession();
+    //底层主要使用反射
+    UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+
+    //mapper.addUser(new User(7, "bbc", "334422"));
+
+    //mapper.updateUser(new User(5, "qqwwe", "3434"));
+
+    mapper.deleteUser(7);
+
+    sqlSession.close();
+}
+```
+
+注：
+
+我们必须要将接口注册绑定到我们的核心配置文件中
+
+```xml
+<!--绑定接口-->
+<mappers>
+    <mapper class="com.lian.dao.UserMapper"/>
+    <!--<mapper resource="com/lian/dao/*Mapper.xml"/>-->
+</mappers>
+```
+
+#### @Param("")注解
+
+- 基本类型的参数或者string类型需要加上
+- 引用类型不需要加
+- 如果只有一个基本类型的话，可以忽略，但是建议加上
+- 我们在SQL中引用的就是我们这里的@Param("")设定的属性名
+
+## #{}和${}的区别是什么？
+
+a、#{}是预编译处理，${}是字符串替换。
+
+b、Mybatis 在处理#{}时，会将 sql 中的#{}替换为 ? 号，调用 PreparedStatement 的 set 方法来赋值；
+
+c、Mybatis 在处理\${}时，就是把\${}替换成变量的值。
+
+d、使用#{}可以有效的防止 SQL 注入，提高系统安全性。
+
 
 
 
@@ -1246,3 +1328,239 @@ public void getUserByLimit(){
 ## mybatis执行流程（源码解析）
 
 ![img](MyBatis.assets/c1a33ceb3ff7bcd34021c0d5dc3dbc6a.png)
+
+
+
+## 多对一处理
+
+建表teacher和student
+
+```sql
+CREATE TABLE `teacher` (
+    `id` INT(10) NOT NULL,
+    `name` VARCHAR(30) DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
+
+
+INSERT INTO teacher(`id`, `name`) VALUES (1, '秦老师');
+
+CREATE TABLE `student` (
+    `id` INT(10) NOT NULL,
+    `name` VARCHAR(30) DEFAULT NULL,
+    `tid` INT(10) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `fktid` (`tid`),
+    CONSTRAINT `fktid` FOREIGN KEY (`tid`) REFERENCES `teacher` (`id`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
+
+
+
+INSERT INTO `student` (`id`, `name`, `tid`) VALUES ('1', '小明', '1');
+INSERT INTO `student` (`id`, `name`, `tid`) VALUES ('2', '小红', '1');
+INSERT INTO `student` (`id`, `name`, `tid`) VALUES ('3', '小张', '1');
+INSERT INTO `student` (`id`, `name`, `tid`) VALUES ('4', '小李', '1');
+INSERT INTO `student` (`id`, `name`, `tid`) VALUES ('5', '小王', '1');
+
+```
+
+
+
+### 测试环境搭建
+
+1、lombok
+
+2、建立实体类Teacher，Student
+
+3、建立Mapper接口
+
+4、建立Mapper.xml文件
+
+5、在核心配置文件中绑定注册我们的Mapper接口或者文件
+
+6、测试查询
+
+
+
+出现问题：
+
+```java
+Could not find resource com/xxx/xxx/StudentMapper.xml
+```
+
+原因：
+
+没有导出xml文件，pom.xml文件配置有问题。也因为我的resource有多级的子目录，导致resource根目录的导出了，但是子目录下的都没有，其实就是没有匹配到子文件里面的xml文件。
+
+原来的：
+
+```xml
+<resource>
+    <directory>src/main/resources</directory>
+    <includes>
+        <include>*.xml</include>
+        <include>**/*.properties</include>
+    </includes>
+    <filtering>true</filtering>
+</resource>
+```
+
+现在的：
+
+```xml
+<resource>
+    <directory>src/main/resources</directory>
+    <includes>
+        <include>**/*.xml</include>
+        <include>**/*.properties</include>
+    </includes>
+    <filtering>true</filtering>
+</resource>
+```
+
+完整的：
+
+```xml
+<build>
+    <resources>
+        <resource>
+            <directory>src/main/java</directory>
+            <includes>
+                <include>**/*.xml</include>
+                <include>**/*.properties</include>
+            </includes>
+            <filtering>true</filtering>
+        </resource>
+
+        <resource>
+            <directory>src/main/resources</directory>
+            <includes>
+                <include>**/*.xml</include>
+                <include>**/*.properties</include>
+            </includes>
+            <filtering>true</filtering>
+        </resource>
+    </resources>
+</build>
+```
+
+这是一种编译打包resource下所有文件的方式。意思就是把所有 /src/main/java 中所有 xml 文件也打包进包中，当使用 mybatis 这种需要写 xml 的框架的时候会要用到
+
+补充：
+
+> 路径匹配原则(Path Matching) 
+>
+> Spring MVC中的路径匹配要比标准的web.xml要灵活的多。默认的策略实现了`org.springframework.util.AntPathMatcher`，路径模式是使用了Apache Ant的样式路径，Apache Ant样式的路径有三种通配符匹配方法（在下面的表格中列出)
+
+Table Ant Wildcard Characters
+
+| Wildcard | Description             |
+| -------- | ----------------------- |
+| ?        | 匹配任何单字符          |
+| *        | 匹配0或者任意数量的字符 |
+| **       | 匹配0或者更多的目录     |
+
+Table Example Ant-Style Path Patterns
+
+| Path              | Description                                                  |
+| ----------------- | ------------------------------------------------------------ |
+| /app/*.x          | 匹配(Matches)所有在app路径下的.x文件                         |
+| /app/p?ttern      | 匹配(Matches) /app/pattern 和 /app/pXttern,但是不包括/app/pttern |
+| /**/example       | 匹配(Matches) /app/example, /app/foo/example, 和 /example    |
+| /app/**/dir/file. | 匹配(Matches) /app/dir/file.jsp, /app/foo/dir/file.html,/app/foo/bar/dir/file.pdf, 和 /app/dir/file.java |
+| /**/*.jsp         | 匹配(Matches)任何的.jsp 文件                                 |
+
+
+
+### 按照查询嵌套处理
+
+```xml
+<!--
+思路：
+    1、查询所有学生的信息
+    2、根据查询出来的学生tid，寻找对应的老师  子查询
+
+-->
+
+<select id="getStudent" resultMap="Student">
+    select * from mybatis.student
+</select>
+<resultMap id="Student" type="com.lian.Pojo.Student">
+    <id property="id" column="id"/>
+    <id property="name" column="name"/>
+    <!--复杂的属性，我们就需要单独的处理
+        对象：使用association
+        集合：使用collection
+    -->
+    <association property="teacher" column="tid" javaType="com.lian.Pojo.Teacher" select="getTeacher2"/>
+
+</resultMap>
+
+
+<select id="getTeacher2" resultType="com.lian.Pojo.Teacher">
+    select * from mybatis.teacher where id = #{id}
+</select>
+```
+
+
+
+### 按照结果嵌套处理
+
+```xml
+<!--方法二：按照结果嵌套处理-->
+<select id="getStudent2" resultMap="StudentTeacher2">
+    select s.id sid , s.name sname, s.tid stid, t.name tname
+    from mybatis.teacher t, mybatis.student s
+    where s.tid = t.id
+</select>
+<resultMap id="StudentTeacher2" type="Student">
+    <result property="id" column="sid"/>
+    <result property="name" column="sname"/>
+    <!--关联对象property 关联对象在Student实体类中的属性-->
+    <association property="teacher" javaType="Teacher">
+        <result property="id" column="stid"/>
+        <result property="name" column="tname"/>
+    </association>
+</resultMap>
+```
+
+
+
+回顾MySQL多对一查询方式：
+
+- 子查询
+- 联表查询
+
+
+
+
+
+## 一对多处理
+
+
+
+1、环境搭建
+
+实体类
+
+```java
+@Data
+public class Student {
+    private int id;
+    private String name;
+    private int tid;
+}
+```
+
+```java
+@Data
+public class Teacher {
+    private int id;
+    private String name;
+    //一个老师拥有多个学生
+    private List<Student> students;
+}
+```
+
+
+
