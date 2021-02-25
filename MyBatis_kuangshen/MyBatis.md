@@ -1533,13 +1533,11 @@ Table Example Ant-Style Path Patterns
 
 
 
-
-
 ## 一对多处理
 
 
 
-1、环境搭建
+### 环境搭建
 
 实体类
 
@@ -1564,3 +1562,357 @@ public class Teacher {
 
 
 
+### 按照结果嵌套处理
+
+```xml
+<!--按结果进行查询-->
+<select id="getTeacher" resultMap="TeacherStudent">
+    select s.id sid, s.name sname ,t.name tname, t.id tid
+    from mybatis.teacher t, mybatis.student s
+    where s.tid = t.id and t.id = #{tid}
+</select>
+
+<resultMap id="TeacherStudent" type="Teacher">
+    <result property="id" column="tid"/>
+    <result property="name" column="tname"/>
+    <!--
+        复杂的属性，我们就需要单独的处理
+        对象：使用association
+        集合：使用collection
+        javaType="" 指定属性的类型
+        但是这里是集合中的泛型信息，需要使用ofType
+    -->
+    <collection property="students" ofType="Student">
+        <result property="id" column="sid"/>
+        <result property="name" column="sname"/>
+        <result property="tid" column="tid"/>
+    </collection>
+</resultMap>
+```
+
+
+
+### 按照查询嵌套处理
+
+```xml
+<select id="getTeacher2" resultMap="TeacherStudent2">
+    select * from mybatis.teacher where id = #{tid}
+</select>
+<resultMap id="TeacherStudent2" type="Teacher">
+    <collection property="students" javaType="ArrayList" ofType="Student" select="getTeacher2ByTeacherId" column="id"/>
+</resultMap>
+<select id="getTeacher2ByTeacherId" resultType="Student">
+    select * from mybatis.student where tid = #{tid}
+</select>
+```
+
+
+
+### 小结
+
+1、关联—— association [多对一 ]
+2、集合—— collection [一对多]
+
+3、javaType & ofType
+
+- JavaType用来指定实体类中属性的类型
+- ofType用来指定映射到List或者集合中的pojo类型,泛型中的约束类型!
+
+
+
+注意点:
+
+- 保证SQL的可读性，尽量保证通俗易懂
+- 注意一对多和多对一中,属性名和字段的问题!
+- 如果问题不好排查错误，可以使用日志，建议使用Log4j
+
+
+
+### 面试高频
+
+- mysql引擎
+- innodb底层原理
+- 索引
+- 索引优化
+
+
+
+## 动态SQL
+
+**动态 SQL 是 MyBatis 的强大特性之一。**如果你使用过 JDBC 或其它类似的框架，你应该能理解根据不同条件拼接 SQL 语句有多痛苦，例如拼接时要确保不能忘记添加必要的空格，还要注意去掉列表最后一个列名的逗号。利用动态 SQL，可以彻底摆脱这种痛苦。
+
+使用动态 SQL 并非一件易事，但借助可用于任何 SQL 映射语句中的强大的动态 SQL 语言，MyBatis 显著地提升了这一特性的易用性。
+
+如果你之前用过 JSTL 或任何基于类 XML 语言的文本处理器，你对动态 SQL 元素可能会感觉似曾相识。在 MyBatis 之前的版本中，需要花时间了解大量的元素。借助功能强大的基于 OGNL 的表达式，MyBatis 3 替换了之前的大部分元素，大大精简了元素种类，现在要学习的元素种类比原来的一半还要少。
+
+- if
+- choose (when, otherwise)
+- trim (where, set)
+- foreach
+
+### 搭建环境
+
+数据库
+
+```sql
+CREATE TABLE `blog`(
+    `id` VARCHAR(50) NOT NULL COMMENT '博客id',
+    `title` VARCHAR(100) NOT NULL COMMENT '博客标题',
+    `author` VARCHAR(30) NOT NULL COMMENT '博客作者',
+    `create_time` DATETIME NOT NULL COMMENT '创建时间',
+    `views` INT(30) NOT NULL COMMENT '浏览量'
+)ENGINE=INNODB DEFAULT CHARSET=utf8
+```
+
+
+
+基础工程创建
+
+1、导包
+
+2、配置文件
+
+3、实体类
+
+```java
+@Data
+public class Blog {
+    private int id;
+    private String title;
+    private String author;
+    private Date creatTime;
+    private int views;
+}
+```
+
+4、实体类对应Mapper接口 以及Mapper.xml文件
+
+
+
+在数据库进行设计时经常用的下划线，而在实体类中我们使用的是驼峰命名规则，我们可以在setting中进行数据库到驼峰命名转换
+
+| 设置名                   | 描述                                                         | 有效值        | 默认值 |
+| ------------------------ | ------------------------------------------------------------ | ------------- | ------ |
+| mapUnderscoreToCamelCase | 是否开启驼峰命名自动映射，即从经典数据库列名 A_COLUMN 映射到经典 Java 属性名 aColumn。 | true \| false | False  |
+
+
+
+### IF使用
+
+```xml
+<select id="findActiveBlogLike"
+     resultType="Blog">
+  SELECT * FROM BLOG WHERE state = ‘ACTIVE’
+  <if test="title != null">
+    AND title like #{title}
+  </if>
+  <if test="author != null and author.name != null">
+    AND author_name like #{author.name}
+  </if>
+</select>
+```
+
+在这里会出现一个问题，用了1=1的方式来避免where为空的尴尬
+
+```xml
+<select id="queryBlogIF" parameterType="map" resultType="Blog">
+    select * from mybatis.blog where 1 = 1
+    <if test="title != null">
+        and title = #{title}
+    </if>
+    <if test="author != null">
+        and author = #{author}
+    </if>
+</select>
+```
+
+### trim、where、set
+
+#### where
+
+前面几个例子已经方便地解决了一个臭名昭著的动态 SQL 问题。现在回到之前的 “if” 示例，这次我们将 “state = ‘ACTIVE’” 设置成动态条件，看看会发生什么。
+
+```xml
+<select id="findActiveBlogLike"
+     resultType="Blog">
+  SELECT * FROM BLOG
+  WHERE
+  <if test="state != null">
+    state = #{state}
+  </if>
+  <if test="title != null">
+    AND title like #{title}
+  </if>
+  <if test="author != null and author.name != null">
+    AND author_name like #{author.name}
+  </if>
+</select>
+```
+
+如果没有匹配的条件会怎么样？最终这条 SQL 会变成这样：
+
+```sql
+SELECT * FROM BLOG
+WHERE
+```
+
+这会导致查询失败。如果匹配的只是第二个条件又会怎样？这条 SQL 会是这样:
+
+```sql
+SELECT * FROM BLOG
+WHERE
+AND title like ‘someTitle’
+```
+
+这个查询也会失败。针对于此的mybatis解决方法就是使用==\<where>==标签
+
+- *where* 元素只会在子元素返回任何内容的情况下才插入 “WHERE” 子句。
+
+- 若子句的开头为 “AND” 或 “OR”，*where* 元素也会将它们去除。
+
+#### trim
+
+通过自定义 trim 元素可以来定制 *where* 元素的功能
+
+比如，和 *where* 元素等价的自定义 trim 元素为：
+
+```xml
+<trim prefix="WHERE" prefixOverrides="AND |OR ">
+  ...
+</trim>
+```
+
+*prefixOverrides* 属性会忽略通过管道符分隔的文本序列（**注意此例中的空格是必要的**）。上述例子会移除所有 *prefixOverrides* 属性中指定的内容，并且插入 *prefix* 属性中指定的内容。
+
+完整的参数
+
+```xml
+<trim prefix="" prefixOverrides="" suffix="" suffixOverrides=""></trim>
+```
+
+
+
+#### set
+
+用于**动态更新语句**的类似解决方案叫做 *set*。*set* 元素可以用于动态包含需要更新的列，忽略其它不更新的列。比如：
+
+```xml
+<update id="updateAuthorIfNecessary">
+  update Author
+    <set>
+      <if test="username != null">username=#{username},</if>
+      <if test="password != null">password=#{password},</if>
+      <if test="email != null">email=#{email},</if>
+      <if test="bio != null">bio=#{bio}</if>
+    </set>
+  where id=#{id}
+</update>
+```
+
+这个例子中，*set* 元素会动态地在行首插入 SET 关键字，并会**删掉额外的逗号**（这些逗号是在使用条件语句给列赋值时引入的）。
+
+**与 *set* 元素等价的自定义 *trim* 元素**：
+
+```xml
+<trim prefix="SET" suffixOverrides=",">
+  ...
+</trim>
+```
+
+**注意，我们覆盖了后缀值设置，并且自定义了前缀值。**
+
+
+
+
+
+### choose、when、otherwise
+
+有时候，我们不想使用所有的条件，而只是想从多个条件中选择一个使用。针对这种情况，MyBatis 提供了 choose 元素，它有点像 Java 中的 switch 语句。
+
+还是上面的例子，但是策略变为：传入了 “title” 就按 “title” 查找，传入了 “author” 就按 “author” 查找的情形。若两者都没有传入，就返回标记为 featured 的 BLOG（这可能是管理员认为，与其返回大量的无意义随机 Blog，还不如返回一些由管理员精选的 Blog）。
+
+```xml
+<select id="findActiveBlogLike"
+     resultType="Blog">
+  SELECT * FROM BLOG WHERE state = ‘ACTIVE’
+  <choose>
+    <when test="title != null">
+      AND title like #{title}
+    </when>
+    <when test="author != null and author.name != null">
+      AND author_name like #{author.name}
+    </when>
+    <otherwise>
+      AND featured = 1
+    </otherwise>
+  </choose>
+</select>
+```
+
+类似于switch，所以最终只会有一个输出
+
+### foreach
+
+### SQL片段
+
+### sql
+
+这个元素可以用来定义可重用的 SQL 代码片段，以便在其它语句中使用。 参数可以静态地（在加载的时候）确定下来，并且可以在不同的 include 元素中定义不同的参数值。比如：
+
+```xml
+<sql id="userColumns"> ${alias}.id,${alias}.username,${alias}.password </sql>
+```
+
+这个 SQL 片段可以在其它语句中使用，例如：
+
+```xml
+<select id="selectUsers" resultType="map">
+  select
+    <include refid="userColumns"><property name="alias" value="t1"/></include>,
+    <include refid="userColumns"><property name="alias" value="t2"/></include>
+  from some_table t1
+    cross join some_table t2
+</select>
+```
+
+也可以在 include 元素的 refid 属性或内部语句中使用属性值，例如：
+
+```xml
+<sql id="sometable">
+  ${prefix}Table
+</sql>
+
+<sql id="someinclude">
+  from
+    <include refid="${include_target}"/>
+</sql>
+
+<select id="select" resultType="map">
+  select
+    field1, field2, field3
+  <include refid="someinclude">
+    <property name="prefix" value="Some"/>
+    <property name="include_target" value="sometable"/>
+  </include>
+</select>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+==所有的动态SQL本质还是SQL语句，只是我们可以在SQL层面，去执行一个逻辑代码==
+
+## 缓存
