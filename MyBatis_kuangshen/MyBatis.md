@@ -1853,11 +1853,36 @@ AND title like ‘someTitle’
 
 ### foreach
 
+动态 SQL 的另一个常见使用场景是对集合进行遍历（尤其是在构建 IN 条件语句的时候）。比如：
+
+```xml
+<select id="selectPostIn" resultType="domain.blog.Post">
+  SELECT *
+  FROM POST P
+  WHERE ID in
+  <foreach item="item" index="index" collection="list"
+      open="(" separator="," close=")">
+        #{item}
+  </foreach>
+</select>
+```
+
+*foreach* 元素的功能非常强大，它允许你指定一个集合，声明可以在元素体内**使用的集合项（item）**和**索引（index）**变量。它也允许你指定开头与结尾的字符串以及集合项迭代之间的分隔符。这个元素也不会错误地添加多余的分隔符。
+
+**提示：**
+
+你可以将任何可迭代对象（如 List、Set 等）、Map 对象或者数组对象作为集合参数传递给 *foreach*。
+
+- 当使用可迭代对象或者数组时，index 是当前迭代的序号，item 的值是本次迭代获取到的元素。
+- 当使用 Map 对象（或者 Map.Entry 对象的集合）时，index 是键，item 是值。
+
+
+
+
+
 ### SQL片段
 
-### sql
-
-这个元素可以用来定义可重用的 SQL 代码片段，以便在其它语句中使用。 参数可以静态地（在加载的时候）确定下来，并且可以在不同的 include 元素中定义不同的参数值。比如：
+这个元素可以用来定义**可重用的 SQL 代码片段复用**。 参数可以静态地（在加载的时候）确定下来，并且可以在不同的 include 元素中定义不同的参数值。比如：
 
 ```xml
 <sql id="userColumns"> ${alias}.id,${alias}.username,${alias}.password </sql>
@@ -1875,7 +1900,7 @@ AND title like ‘someTitle’
 </select>
 ```
 
-也可以在 include 元素的 refid 属性或内部语句中使用属性值，例如：
+也**可以在 include 元素的 refid 属性或内部语句中使用属性值**，例如：
 
 ```xml
 <sql id="sometable">
@@ -1897,22 +1922,252 @@ AND title like ‘someTitle’
 </select>
 ```
 
+注意事项：
 
-
-
-
-
-
-
-
-
-
-
-
-
+- 最好基于单表来进行定义，使复用性好
+- 不要存在where标签
 
 
 
 ==所有的动态SQL本质还是SQL语句，只是我们可以在SQL层面，去执行一个逻辑代码==
 
 ## 缓存
+
+### 简介
+
+1、什么是缓存[ Cache ]?
+
+- 存在内存中的临时数据。
+
+- 将用户经常查询的数据放在缓存(内存)中，用户去查询数据就不用从磁盘上(关系型数据库数据文件)查
+  询，从缓存中查询，从而提高查询效率,解决了高并发系统的性能问题。
+
+2、为什么使用缓存?
+
+- 减少和数据库的交互次数，减少系统开销，提高系统效率。
+
+3、什么样的数据能使用缓存?
+
+- 经常查询并且不经常改变的数据。
+
+### Mybatis缓存
+
+- MyBatis包含一个非常强大的查询缓存特性，它可以非常方便地定制和配置缓存。缓存可以极大的提升查询效率。
+- MyBatis系统中默认定义了两级缓存: **一级缓存和二级缓存**
+  - **默认情况下，只有一级缓存开启**。(SqISession级别的缓存， 也称为本地缓存)
+  - 二级缓存需要手动开启和配置，他是基于namespace级别的缓存。
+  - 为了提高扩展性, MyBatis定义了缓存接口Cache。 我们可以通过实现Cache接口来自定义二级缓存
+
+
+
+### 一级缓存
+
+又叫本地缓存，==只在一次sqlsession中有效==，一级缓存就是一个map
+
+- 与数据库同一次会话期间查询到的数据会放在本地缓存中。
+- 以后如果需要获取相同的数据，直接从缓存中拿，没必须再去查询数据库;
+
+
+
+测试在一个session中查询两次相同的记录
+
+```java
+@Test
+public void queryUserByID(){
+    SqlSession sqlSession = MyBatisUtils.getSqlSession();
+    UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+
+    User user = mapper.queryUserByID(1);
+    System.out.println(user);
+
+    System.out.println("----===========");
+    User user2 = mapper.queryUserByID(1);
+    System.out.println(user2);
+
+    System.out.println(user == user2);
+    /**
+     * Opening JDBC Connection
+     * Created connection 2052457859.
+     * ==>  Preparing: select * from mybatis.user where id = ?
+     * ==> Parameters: 1(Integer)
+     * <==    Columns: id, name, pwd
+     * <==        Row: 1, alice, 12345
+     * <==      Total: 1
+     * org.example.pojo.User@10993713
+     * ----===========
+     * org.example.pojo.User@10993713
+     * true
+     * Closing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@7a560583]
+     * Returned connection 2052457859 to pool.
+     *
+     * Process finished with exit code 0
+     */
+    /*
+    * 只进行了一次的sql查询，两次相同的记录
+    * */
+
+
+    sqlSession.close();
+}
+```
+
+
+
+缓存失效的情况
+
+- 查询不同的东西
+- 增删改操作，可能会改变原来的数据，所以必定会刷新缓存!
+
+```java
+Opening JDBC Connection
+Created connection 264978436.
+==>  Preparing: select * from mybatis.user where id = ?
+==> Parameters: 1(Integer)
+<==    Columns: id, name, pwd
+<==        Row: 1, alice, 12345
+<==      Total: 1
+User(id=1, name=alice, pwd=12345)
+==>  Preparing: update mybatis.user set name = ? ,pwd = ? where id = ?
+==> Parameters: lucas(String), 55556(String), 2(Integer)
+<==    Updates: 1
+----===========
+==>  Preparing: select * from mybatis.user where id = ?
+==> Parameters: 1(Integer)
+<==    Columns: id, name, pwd
+<==        Row: 1, alice, 12345
+<==      Total: 1
+User(id=1, name=alice, pwd=12345)
+false
+Closing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@fcb4004]
+Returned connection 264978436 to pool.
+
+Process finished with exit code 0
+```
+
+- 查询不同的Mapper.xml
+- 手动清理缓存!
+
+
+
+
+
+### 二级缓存
+
+二级缓存也叫全局缓存，一级缓存作用域太低了，所以诞生了二级缓存
+
+基于namespace级别的缓存，一个名称空间，对应一个二级缓存;
+
+工作机制
+
+- 一个会话查询一条数据，这个数据就会被放在当前会话的一级缓存中;
+- 如果当前会话关闭了，这个会话对应的一级缓存就没了;但是我们想要的是，会话关闭了，一级缓存中的
+  数据被保存到二级缓存中;
+- 新的会话查询信息，就可以从二级缓存中获取内容;
+- 不同的mapper查出的数据会放在自己对应的缓存(map) 中;
+
+要启用全局的二级缓存，只需要在你的 SQL 映射文件中添加一行：
+
+```xml
+<cache/>
+```
+
+基本上就是这样。这个简单语句的效果如下:
+
+- 映射语句文件中的所有 select 语句的结果将会被缓存。
+- 映射语句文件中的所有 insert、update 和 delete 语句会刷新缓存。
+- 缓存会使用**最近最少使用算法**（LRU, Least Recently Used）算法来清除不需要的缓存。
+- 缓存不会定时进行刷新（也就是说，**没有刷新间隔**）。
+- 缓存会保存列表或对象（无论查询方法返回哪种）的 1024 个引用。
+- 缓存会被视为读/写缓存，这意味着获取到的对象**并不是共享的**，可以安全地被调用者修改，而不干扰其他调用者或线程所做的潜在修改。
+
+
+
+步骤
+
+1、mybatis的设置文件默认开启，但是我们会显示的开启
+
+| 设置名       | 描述                                                     | 有效值        | 默认值 |
+| :----------- | :------------------------------------------------------- | :------------ | :----- |
+| cacheEnabled | 全局性地开启或关闭所有映射器配置文件中已配置的任何缓存。 | true \| false | true   |
+
+```xml
+<settings>
+    <!--标准的日志工厂实现-->
+    <setting name="logImpl" value="STDOUT_LOGGING"/><!--多一个空格，大小写都会报错-->
+    <!--显示的开启全局缓存-->
+    <setting name="cacheEnabled" value="true"/>
+</settings>
+```
+
+2、在要使用二级缓存的mapper中开启，可以自定义参数
+
+```xml
+<cache
+  eviction="FIFO"
+  flushInterval="60000"
+  size="512"
+  readOnly="true"/>
+```
+
+- 这个更高级的配置创建了一个 FIFO 缓存，
+- 每隔 60 秒刷新，
+- 最多可以存储结果对象或列表的 512 个引用，
+- 而且返回的对象被认为是只读的，因此对它们进行修改可能会在不同线程中的调用者产生冲突。
+
+可用的清除策略有：
+
+- `LRU` – 最近最少使用：移除最长时间不被使用的对象。
+- `FIFO` – 先进先出：按对象进入缓存的顺序来移除它们。
+- `SOFT` – 软引用：基于垃圾回收器状态和软引用规则移除对象。
+- `WEAK` – 弱引用：更积极地基于垃圾收集器状态和弱引用规则移除对象。
+
+==默认的清除策略是 LRU。==
+
+
+
+3、测试
+
+- 我们需要将实体类序列化，否则会报错，readOnle默认是false，需要序列化，改为true即只读，不需要序列化
+
+```java
+Cause: java.io.NotSerializableException: org.example.pojo.User
+```
+
+```java
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class User implements Serializable {
+    private int id;
+    private String name;
+    private String pwd;
+}
+```
+
+- 只要开启了二级缓存,在同一个Mapper下就有效
+- 所有的数据都会先放在一级缓存中;
+- 只有当会话提交，或者关闭的时候，才会提交到二级缓冲中!
+
+
+
+### mybatis缓存原理
+
+用户——二级——一级——数据库
+
+
+
+### 自定义缓存
+
+除了上述自定义缓存的方式，你也可以通过实现你自己的缓存，或为其他第三方缓存方案创建适配器，来完全覆盖缓存行为。
+
+```
+<cache type="com.domain.something.MyCustomCache"/>
+```
+
+### cache-ref
+
+回想一下上一节的内容，对某一命名空间的语句，只会使用该命名空间的缓存进行缓存或刷新。 但你可能会想要在多个命名空间中共享相同的缓存配置和实例。要实现这种需求，你可以使用 cache-ref 元素来引用另一个缓存。
+
+```xml
+<cache-ref namespace="com.someone.application.data.SomeMapper"/>
+```
