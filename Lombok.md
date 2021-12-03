@@ -358,10 +358,6 @@ public class ToStringExample {
 
 ### @EqualsAndHashCode
 
-
-
-
-
 With Lombok
 
 ```java
@@ -473,8 +469,6 @@ public class EqualsAndHashCodeExample {
 
 
 ### @NoArgsConstructor, @RequiredArgsConstructor, @AllArgsConstructor
-
-
 
 
 
