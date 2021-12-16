@@ -41,3 +41,39 @@ public class StringPools58Demo {
 
 ```
 
+# final 有什么用
+
+用于修饰类、属性和方法；
+
+被final修饰的类不可以被继承
+
+被final修饰的方法不可以被重写
+
+被final修饰的变量不可以被改变，被final修饰不可变的是变量的引用，而不是引用指向的内容，引
+用指向的内容是可以改变的
+
+
+
+# 如何跳出当前的多重嵌套循环
+
+在Java中，要想跳出多重循环，可以在外面的循环语句前定义一个标号，然后在里层循环体的代码中使
+用带有标号的break 语句，即可跳出外层循环。例如：
+
+```java
+public static void main(String[] args) {
+    ok:
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+            System.out.println("i=" + i + ",j=" + j);
+            if (j == 5) {
+                break ok;
+            }
+        }
+    }
+}
+```
+
+
+
+
+

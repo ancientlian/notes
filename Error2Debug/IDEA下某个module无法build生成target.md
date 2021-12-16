@@ -1,4 +1,8 @@
-# 起因
+
+
+# IDEA下某个module无法build生成target
+
+## 起因
 
 部署web项目的时候并没有成功，说是资源不可访问，于是查找原因
 
@@ -40,7 +44,7 @@
 </module>
 ```
 
-# 解决方案
+## 解决方案
 
 ```xml
 <component name="NewModuleRootManager" inherit-compiler-output="true">
@@ -53,7 +57,7 @@
 
 这一段是无效的配置，删除即可
 
-# 拓展
+## 拓展
 
 iml是 intellij idea的工程配置文件，里面是当前project的一些配置信息。
 
