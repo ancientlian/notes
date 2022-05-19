@@ -99,3 +99,109 @@ ref被用来给元素或子组件注册引用信息。引用信息将会注册�
 this.$refs是一个对象，持有当前组件中注册过 ref特性的所有 DOM 元素和子组件实例
 
 > **注意：** $refs只有在组件渲染完成后才填充，在初始渲染的时候不能访问它们，并且它是非响应式的，因此不能用它在模板中做数据绑定
+
+
+
+
+
+# nprogress进度条的使用
+
+打开一个页面时，往往会伴随一些请求，并且会在页面上方出现进度条。它的原理时，在我们发起请求的时候开启进度条，在请求成功后关闭进度条，所以只需要在request.js中进行配置。
+如下图所示，我们页面加载时发起了一个请求，此时页面上方出现蓝色进度条
+![在这里插入图片描述](https://img-blog.csdnimg.cn/f0df5bccfaee4274b45755b52bf40b60.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5q-b5q-b6Jmr5ZGc5ZGc,size_20,color_FFFFFF,t_70,g_se,x_16)
+对应的request.js设置
+
+```js
+import axios from "axios";
+//引入进度条
+import nprogress from 'nprogress';
+//引入进度条样式
+import "nprogress/nprogress.css";
+//1、对axios二次封装
+const requests = axios.create({
+    //基础路径，requests发出的请求在端口号后面会跟改baseURl
+    baseURL:'/api',
+    timeout: 5000,
+})
+
+//2、配置请求拦截器
+requests.interceptors.request.use(config => {
+    //config内主要是对请求头Header配置
+    //比如添加token
+
+    //开启进度条
+    nprogress.start();
+    return config;
+})
+
+//3、配置相应拦截器
+requests.interceptors.response.use((res) => {
+    //成功的回调函数
+
+    //响应成功，关闭进度条
+    nprogress.done()
+    return  res.data;
+},(error) => {
+    //失败的回调函数
+    console.log("响应失败"+error)
+    return Promise.reject(new Error('fail'))
+})
+
+//4、对外暴露
+export default requests;
+```
+
+可以通过修改nprogress.css文件的background来修改进度条颜色。（最好不要这样改，因为是对源码文件的修改，是不允许的）
+![在这里插入图片描述](https://img-blog.csdnimg.cn/e66d5f5d851a4839810c34ad234f7c0a.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5q-b5q-b6Jmr5ZGc5ZGc,size_11,color_FFFFFF,t_70,g_se,x_16)
+
+
+
+
+
+# vuex
+
+一般是在store文件夹下面
+
+首先确保安装了vuex,根目录创建store文件夹，文件夹下创建index.js，内容如下：
+
+```js
+import Vue from 'vue'
+import Vuex from 'vuex'
+
+Vue.use(Vuex)
+
+//对外暴露store的一个实例
+export default new Vuex.Store({
+    
+    
+    state:{
+    
+    },
+    mutations:{
+    
+    },
+    actions:{
+    
+    },
+    
+})
+```
+
+如果想要使用vuex，还要再main.js中引入
+main.js:
+(1) 引入文件
+(2) 注册store
+**但凡是在main.js中的Vue实例中注册的实体，在所有的组件中都会有（this.$.实体名）属性**
+
+```js
+import store from './store'
+new Vue({
+    
+    
+  render: h => h(App),
+  //注册路由，此时组件中都会拥有$router $route属性
+  router,
+  //注册store,此时组件中都会拥有$store
+  store
+}).$mount('#app')
+```
