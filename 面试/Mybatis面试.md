@@ -4,7 +4,9 @@ Mybatis中有一级缓存和二级缓存，默认情况下一级缓存是开启�
 SqlSession 中进行相同的 SQL 语句查询时，第二次以后的查询不会从数据库查询，而是直接从缓存中获取，一级缓存最多缓存 1024 条
 SQL。二级缓存是指可以跨 SqlSession 的缓存。是 mapper 级别的缓存，对于 mapper 级别的缓存不同的 sqlsession 是可以共享的。
 
-# ![](https://s2.loli.net/2021/12/20/OMrPhTEcyjJaVHZ.png))Mybatis 的一级缓存原理（sqlsession级别)
+![](https://s2.loli.net/2021/12/20/OMrPhTEcyjJaVHZ.png)
+
+# Mybatis 的一级缓存原理（sqlsession级别)
 
 第一次发出一个查询 sql，sql 查询结果写入 sqlsession 的一级缓存中，缓存使用的数据结构是一个 map。
 key：MapperID+offset+limit+Sql+所有的入参
