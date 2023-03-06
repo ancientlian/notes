@@ -16,11 +16,11 @@ c)    git 保证完整性
 
 a)    `git config –-global user.name ‘xx’`
 
-b)   ` git config –-global user.email ‘xx’`
+b)   `git config –-global user.email ‘xx’`
 
 c)    生成sshkey:
 
-```
+```bash
 $ ssh-keygen -t rsa -C "youremail@youremail.com"  
 
 # Generating public/private rsa key pair...
@@ -29,7 +29,7 @@ $ ssh-keygen -t rsa -C "youremail@youremail.com"
 
 查看你的 public key，
 
-```
+```bash
 $ cat ~/.ssh/id_rsa.pub
 # ssh-rsa AAAAB3NzaC1yc2E... youremail@youremail.com
 ```
@@ -120,10 +120,6 @@ git branch bugWork main^^2^
 
 <img src="C:\Users\Lian\Desktop\笔记\Git\image-20210114152119710.png" alt="image-20210114152119710" style="zoom:67%;" />
 
-
-
-
-
 ##### 强制修改分支位置
 
 我使用相对引用最多的就是移动分支。可以直接使用 `-f` 选项让分支指向另一个提交。例如:
@@ -142,11 +138,11 @@ git branch -f bugFix main~3
 
 这句命令结果是使得bugFix分支退到main的第三个父节点
 
-#### git merge 
+#### git merge
 
 分支的合并。推荐在远端进行合并，保证本地的master最为干净
 
-#### git rebase 
+#### git rebase
 
 第二种合并分支的方法是 `git rebase`。Rebase 实际上就是取出一系列的提交记录，“复制”它们，然后在另外一个地方逐个的放下去。
 
@@ -182,7 +178,7 @@ Git Describe 能帮你在提交历史中移动了多次以后找到方向；当�
 
 `git describe` 的语法是：
 
-```
+```bash
 git describe <ref>
 ```
 
@@ -190,7 +186,7 @@ git describe <ref>
 
 它输出的结果是这样的：
 
-```
+```bash
 <tag>_<numCommits>_g<hash>
 ```
 
@@ -198,43 +194,43 @@ git describe <ref>
 
 当 `ref` 提交记录上有某个标签时，则只输出标签名称
 
-#### git stash 
+#### git stash
 
-对于这一次的操作先“入栈”，然后一次性commit。不推荐，容易乱，容易忘，会漏掉。可以使用`git commit --amend `修正，就只会是一次commit
+对于这一次的操作先“入栈”，然后一次性commit。不推荐，容易乱，容易忘，会漏掉。可以使用`git commit --amend`修正，就只会是一次commit
 
 #### git alias 组合命令
 
 通过`git config` 文件来轻松地为每一个命令设置一个别名，这里有一些例子你可以试试：
 
 ```bash
-$ git config --global alias.co checkout
-$ git config --global alias.br branch
-$ git config --global alias.ci commit
-$ git config --global alias.st status
-$ git config --global alias.ac '!git add -A && git commit -m'
+git config --global alias.co checkout
+git config --global alias.br branch
+git config --global alias.ci commit
+git config --global alias.st status
+git config --global alias.ac '!git add -A && git commit -m'
 
 ```
 
-　　这意味着，当要输入 `git commit`时，只需要输入 `git ci`。
+这意味着，当要输入 `git commit`时，只需要输入 `git ci`。
 
-　　在创建你认为应该存在的命令时这个技术会很有用。 例如，为了解决取消暂存文件的易用性问题，可以向 Git 中添加你自己的取消暂存别名：
+在创建你认为应该存在的命令时这个技术会很有用。 例如，为了解决取消暂存文件的易用性问题，可以向 Git 中添加你自己的取消暂存别名：
 
 ```bash
-$ git config --global alias.unstage 'reset HEAD --'
+git config --global alias.unstage 'reset HEAD --'
 ```
 
-　　这会使下面的两个命令等价：
+　这会使下面的两个命令等价：
 
 ```bash
-$ git unstage fileA
-$ git reset HEAD -- fileA
+git unstage fileA
+git reset HEAD -- fileA
 ```
 
 　　通常也会添加一个 `last` 命令，像这样：
 
 ```bash
 $ git config --global alias.last 'log -1 HEAD'
-#这样，可以轻松地看到最后一次提交：
+# 这样，可以轻松地看到最后一次提交：
 $ git last
 commit 66938dae3329c7aebe598c2246a8e6af90d04646
 Author: Josh Goebel <dreamer3@example.com>
@@ -247,8 +243,8 @@ Date:   Tue Aug 26 19:48:51 2008 +0800
 
 　　可以看出，Git 只是简单地将别名替换为对应的命令。 然而，你可能想要执行外部命令，而不是一个 Git 子命令。 如果是那样的话，可以在命令前面加入 `!` 符号。 如果你自己要写一些与 Git 仓库协作的工具的话，那会很有用。 我们现在演示将 `git visual` 定义为 `gitk` 的别名：
 
-```
-$ git config --global alias.visual '!gitk'
+```bash
+git config --global alias.visual '!gitk'
 ```
 
 还有取消别名，重命名等。
@@ -297,7 +293,7 @@ git cherry-pick c3 c4 c7
 
 如果你在命令后增加了这个选项, Git 会打开一个 UI 界面并列出将要被复制到目标分支的备选提交记录，它还会显示每个提交记录的哈希值和提交说明，提交说明有助于你理解这个提交进行了哪些更改。
 
-在实际使用时，所谓的 UI 窗口一般会在文本编辑器 —— 如 Vim —— 中打开一个文件。 
+在实际使用时，所谓的 UI 窗口一般会在文本编辑器 —— 如 Vim —— 中打开一个文件。
 
 当 rebase UI界面打开时, 你能做3件事:
 
@@ -309,17 +305,11 @@ git cherry-pick c3 c4 c7
 
 <img src="C:\Users\Lian\Desktop\笔记\Git\image-20210114143356553.png" alt="image-20210114143356553" style="zoom:67%;" />
 
-
-
 ```bash
 git rebase -i overHere --solution-ordering C3,C5,C4
 ```
 
-
-
 现：
-
-
 
 #### 本地栈式提交
 
@@ -335,12 +325,6 @@ git rebase bugFix main
 现：
 
 <img src="C:\Users\Lian\Desktop\笔记\Git\image-20210114144441492.png" alt="image-20210114144441492" style="zoom:67%;" />
-
-
-
-
-
-
 
 #### 撤销变更
 
@@ -371,7 +355,7 @@ revert 之后就可以把你的更改推送到远程仓库与别人分享啦。
 当然也可以对当前的版本直接进行revert
 
 ```bash
-$ git revert HEAD
+git revert HEAD
 ```
 
 结果是：
@@ -535,8 +519,6 @@ git push
 
 ![image-20210114114614042](GitNotes.assets/image-20210114114614042.png)
 
-
-
 ##### 合并远程仓库
 
 在开发社区里，有许多关于 merge 与 rebase 的讨论。以下是关于 rebase 的优缺点：
@@ -610,8 +592,6 @@ git branch -u o/main foo
 git branch -u o/main
 ```
 
-
-
 原：
 
 ![image-20210114120709551](GitNotes.assets/image-20210114120709551.png)
@@ -626,8 +606,6 @@ git push
 现：
 
 ![image-20210114120700267](GitNotes.assets/image-20210114120700267.png)
-
-
 
 ##### git push 的参数
 
@@ -690,8 +668,6 @@ git push origin main^:foo
 现：
 
 ![image-20210114133650024](GitNotes.assets/image-20210114133650024.png)
-
-
 
 ##### git fetch 的参数
 
@@ -780,8 +756,6 @@ git pull 实际上就是 fetch + merge 的缩写, git pull 唯一关注的是提
 原：
 
 ![image-20210114135958170](GitNotes.assets/image-20210114135958170.png)
-
-
 
 ```bash
 git pull origin bar:foo

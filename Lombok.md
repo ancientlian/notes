@@ -258,8 +258,6 @@ public class GetterSetterExample {
 }
 ```
 
-
-
 ### @ToString
 
 > By default, it'll print your class name, along with each field, in order, separated by commas.
@@ -289,8 +287,6 @@ public class GetterSetterExample {
  `@ToString.Include(name = "some other name")`:额外指定命名
 
 `@ToString.Include(rank = -1)`：按优先级改变输出顺序，从高到低，默认为0，等级相同按源文件顺序。
-
-
 
 示例：
 
@@ -466,13 +462,7 @@ public class EqualsAndHashCodeExample {
 }
 ```
 
-
-
 ### @NoArgsConstructor, @RequiredArgsConstructor, @AllArgsConstructor
-
-
-
-
 
 With Lombok
 
@@ -528,15 +518,11 @@ public class ConstructorExample<T> {
 }
 ```
 
-
-
-
-
 ## 参考
 
-https://www.cnblogs.com/heyonggang/p/8638374.html
+<https://www.cnblogs.com/heyonggang/p/8638374.html>
 
-https://projectlombok.org/features/all
+<https://projectlombok.org/features/all>
 
 > 总结
 >
@@ -544,7 +530,7 @@ https://projectlombok.org/features/all
 >
 > 知乎上有位大神发表过对Lombok的一些看法：
 >
-> ```
+> ```text
 > 这是一种低级趣味的插件，不建议使用。JAVA发展到今天，各种插件层出不穷，如何甄别各种插件的优劣？能从架构上优化你的设计的，能提高应用程序性能的 ，
 > 实现高度封装可扩展的...， 像lombok这种，像这种插件，已经不仅仅是插件了，改变了你如何编写源码，事实上，少去了代码你写上去又如何？ 
 > 如果JAVA家族到处充斥这样的东西，那只不过是一坨披着金属颜色的屎，迟早会被其它的语言取代。
