@@ -3,13 +3,13 @@
 在启动mysql服务的时候失败了
 使用`mysqld --console`这个命令查看一下日志信息，查询到如下的报错情况：
 
-```
+```text
 [ERROR] Can't start server: Invalid value for --default-authentication-plugin
 ```
 
 于是知道了是之前的一个`my.ini`文件里面的配置有问题
 
-```
+```text
 default_authentication_plugin=mysql_native_password    
 # 连接到服务器时使用的默认身份验证插件
 # mysql 5.7:  mysql_native_password
