@@ -1,5 +1,39 @@
 # Homebrew
 
+## 安装Homebrew
+
+[https://brew.sh/index_zh-cn](https://brew.sh/index_zh-cn)
+
+切换镜像源
+
+```Bash
+# 替换brew.git:
+cd "$(brew --repo)"
+git remote set-url origin https://mirrors.aliyun.com/homebrew/brew.git
+# 替换homebrew-core.git:
+cd "$(brew --repo)/Library/Taps/homebrew/homebrew-core"
+git remote set-url origin https://mirrors.aliyun.com/homebrew/homebrew-core.git
+# 应用生效
+brew update
+# 替换homebrew-bottles:
+echo 'export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.aliyun.com/homebrew/homebrew-bottles' >> ~/.zshrc
+source ~/.zshrc
+
+```
+
+## 安装git
+
+```Bash
+brew install git
+# 查看版本
+git --version
+
+
+
+```
+
+## 其他命令
+
 ```bash
 brew list 
 
@@ -30,3 +64,7 @@ brew bundle dump 来完成当前环境的导出,导出完成后，你会得到�
 ## 常用 tap
 
 第三方库
+
+## 参考文章
+
+<https://blog.csdn.net/weixin_56878436/article/details/120081045>

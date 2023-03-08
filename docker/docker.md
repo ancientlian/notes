@@ -33,9 +33,15 @@ That isolation leverages [kernel namespaces and cgroups](https://medium.com/@sas
 
 When running a container, it uses an isolated filesystem. This custom filesystem is provided by a **container image**. Since the image contains the container's filesystem, it must contain everything needed to run an application - all dependencies, configuration, scripts, binaries, etc.The image also contains other configuration for the container, such as environment variables, a default command to run, and other metadata.
 
+## 配置阿里云镜像加速器
+
+1. 访问这个地址，使用自己的阿里云账号登录，查看菜单栏左下角，发现有一个镜像加速器:[https://cr.console.aliyun.com/cn-hangzhou/instances/mirrors](https://cr.console.aliyun.com/cn-hangzhou/instances/mirrors) 找到自己的镜像加速器的地址链接
+2. 打开Mac中Docker的配置选项，并添加；点击apply & restart
+3. 最后用docker info命令检查配置是否生效
+
 ## docker安装nginx配置
 
-```bash
+```docker
 docker run -d -p 80:80 --name nginx02 -v F:\WorkSpace\nginx\nginx.conf:/etc/nginx/conf.d/default.conf nginx
 ```
 
