@@ -38,13 +38,17 @@ git --version
 brew list 
 
 
-brew outdated 来查看所有有更新版本的软件
+# 来查看所有有更新版本的软件
+brew outdated 
 
 
 brew uninstall [软件名]
 
 brew info [软件名]
-brew cleanup 命令来清理系统中所有软件的历史版本，或者可以使用 brew cleanup [软件名]来清理特定软件的旧版
+#命令来清理系统中所有软件的历史版本，或者可以使用 来清理特定软件的旧版
+brew cleanup 
+brew cleanup [软件名]
+
 # 管理后台软件
 brew services list： 查看所有服务
 brew services run [服务名]: 单次运行某个服务
@@ -53,7 +57,7 @@ brew services stop [服务名]：停止某个服务
 brew services restart：重启某个服务。
 
 brew doctor 来开启 Homebrew 自带的检查，从而确认有哪些问题，并进行修复。
-
+# 更新 brew
 brew update
 
 
