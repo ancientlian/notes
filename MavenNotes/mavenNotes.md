@@ -1,10 +1,10 @@
-# mavenNotes
+# Maven
 
-### 下载
+## 下载
 
 #### 下载安装
 
- https://maven.apache.org/download.cgi
+<https://maven.apache.org/download.cgi>
 
 #### 配置 MVM_HOME
 
@@ -13,36 +13,37 @@
 2. Linux .bash_profile
 
 3. MAVEN_OPTS，以一个变量的形式传值
-4. 配置setting.xml
 
-maven加载顺序——> ~/.m2/setting.ml——> conf/setting.ml
+5. 配置setting.xml
+
+maven加载顺序——> `~/.m2/setting.ml`——> `conf/setting.ml`
 
 ```html
 镜像配置
 <mirror>  
-<id>alimaven</id>  
-<name>aliyun maven</name>  
-<url>http://maven.aliyun.com/nexus/content/groups/public/</url>  
-<mirrorOf>central</mirrorOf>          
+	<id>alimaven</id>  
+	<name>aliyun maven</name>  
+	<url>http://maven.aliyun.com/nexus/content/groups/public/</url>  
+	<mirrorOf>central</mirrorOf>          
 </mirror> 
 
 <mirror>
-<id>ui</id>
-<mirrorOf>central</mirrorOf>
-<name>Human Readable Name for this Mirror.</name>
-<url>http://uk.maven.org/maven2/</url>
+	<id>ui</id>
+	<mirrorOf>central</mirrorOf>
+	<name>Human Readable Name for this Mirror.</name>
+	<url>http://uk.maven.org/maven2/</url>
 </mirror>
 
 <mirror>
-<id>osc</id>
-<mirrorOf>central</mirrorOf>
-<url>http://maven.oschina.net/content/groups/public/</url>
+	<id>osc</id>
+	<mirrorOf>central</mirrorOf>
+	<url>http://maven.oschina.net/content/groups/public/</url>
 </mirror>
 
 <mirror>
-<id>osc_thirdparty</id>
-<mirrorOf>thirdparty</mirrorOf>
-<url>http://maven.oschina.net/content/repositories/thirdparty/</url>
+	<id>osc_thirdparty</id>
+	<mirrorOf>thirdparty</mirrorOf>
+	<url>http://maven.oschina.net/content/repositories/thirdparty/</url>
 </mirror>
 
 ```
@@ -52,21 +53,21 @@ maven加载顺序——> ~/.m2/setting.ml——> conf/setting.ml
 ##### pom.xml
 
 ```html
-    <modelVersion>4.0.0</modelVersion>
+<modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.example</groupId>
-    <artifactId>firstMavenTest</artifactId>
-    <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
+<groupId>org.example</groupId>
+<artifactId>firstMavenTest</artifactId>
+<packaging>pom</packaging>
+<version>1.0-SNAPSHOT</version>
 ```
 
-groupId  倒着写的域名
+- groupId  倒着写的域名
 
-artfactId 功能命名
+- artfactId 功能命名
 
-version 版本号（定义的好坏影响沟通成本）
+- version 版本号（定义的好坏影响沟通成本）
 
-packaging  打包方式 **默认是jar**，还有pom，maven-plugin
+- packaging  打包方式 **默认是jar**，还有pom，maven-plugin
 
 `<dependencyManagement>`
 
@@ -105,7 +106,7 @@ packaging  打包方式 **默认是jar**，还有pom，maven-plugin
 如1.0.0-RELAESE
 
 
-
+	
 ### Maven核心概念
 
 #### 目录结构
@@ -130,8 +131,6 @@ scope的依赖传递（非重点）：
 | test     | test     | -    | -        | test     |
 | provided | provided | -    | provided | provided |
 | runtime  | runtime  | -    | -        | runtime  |
-
-
 
 ##### 2.依赖的排除  
 
