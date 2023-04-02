@@ -2,7 +2,7 @@
 
 ## 下载
 
-#### 下载安装
+### 下载安装
 
 <https://maven.apache.org/download.cgi>
 
@@ -132,7 +132,7 @@ scope的依赖传递（非重点）：
 | provided | provided | -    | provided | provided |
 | runtime  | runtime  | -    | -        | runtime  |
 
-##### 2.依赖的排除  
+##### 2.依赖的排除
 
 情景：如果我们在当前工程中引入了一个依赖是 A，而 A 又依赖了 B，那么 Maven 会自动将 A 依赖的 B 引入当前工程，但是个别情况下 B 有可能是一个不稳定版，或对当前工程有不良影响。这时我们可以在引入 A 的时候将 B 排除。
 
@@ -292,7 +292,7 @@ a)  改变pom的`<packaging>maven-plugin</packaging>`
 ```html
 <dependencies>
         <dependency>
-            <groupId>org.apache.maven</groupId>
+	        <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api </artifactId>
             <version>3.5.0</version>
         </dependency>
