@@ -303,8 +303,6 @@ git cherry-pick c3 c4 c7
 
 原：
 
-<img src="C:\Users\Lian\Desktop\笔记\Git\image-20210114143356553.png" alt="image-20210114143356553" style="zoom:67%;" />
-
 ```bash
 git rebase -i overHere --solution-ordering C3,C5,C4
 ```
@@ -315,7 +313,6 @@ git rebase -i overHere --solution-ordering C3,C5,C4
 
 原：
 
-<img src="C:\Users\Lian\Desktop\笔记\Git\image-20210114144319882.png" alt="image-20210114144319882" style="zoom:67%;" />
 
 ```bash
 git rebase -i main --solution-ordering C4
@@ -324,7 +321,7 @@ git rebase bugFix main
 
 现：
 
-<img src="C:\Users\Lian\Desktop\笔记\Git\image-20210114144441492.png" alt="image-20210114144441492" style="zoom:67%;" />
+
 
 #### 撤销变更
 

@@ -105,8 +105,6 @@ maven加载顺序——> `~/.m2/setting.ml`——> `conf/setting.ml`
 
 如1.0.0-RELAESE
 
-
-	
 ### Maven核心概念
 
 #### 目录结构

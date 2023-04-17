@@ -1,4 +1,4 @@
-# mac 下命令行启动vscode打开指定文件夹
+# mac 下命令行启动 vscode 打开指定文件夹
 
 `command+shift+p` 打开控制台
 
