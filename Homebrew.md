@@ -72,3 +72,9 @@ brew bundle dump 来完成当前环境的导出,导出完成后，你会得到�
 ## 参考文章
 
 <https://blog.csdn.net/weixin_56878436/article/details/120081045>
+    
+
+[**从零开始，编写一个** **HomeBrew** **缓存清理脚本** **-** **少数派**](https://sspai.com/post/65842)
+    
+
+[**Homebrew** **升级** **4.0.0****，麦金塔上的啤酒会更香吗？** **-** **少数派**](https://sspai.com/post/78587)
