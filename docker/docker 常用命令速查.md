@@ -1,6 +1,6 @@
 # docker 常用命令速查
 
-```docker
+```bash
 
 docker ps
 
@@ -12,5 +12,8 @@ docker stop 容器ID或容器名
 docker kill 容器ID或容器名 :直接关闭容器
 
 docker restart 容器ID或容器名
+
+#进入容器
+docker exec -it mysql bash
 
 ```
