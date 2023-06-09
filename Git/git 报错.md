@@ -7,3 +7,19 @@
 原因：XXX分支有没有合并到当前分支的内容
 
 解决方法：使用大写的D 强制删除 git branch -D XXX
+
+# amend提交报错 `There was a problem with the editor 'vi'`
+
+```text
+error: There was a problem with the editor 'vi'.
+Please supply the message using either -m or -F option.
+```
+
+原因：之前没有配置 core.editor 选项。
+配置core.editor 选项后再次运行git commit --amend 即可。
+```shell
+git config --global core.editor /usr/bin/vim
+```
+
+配置core.editor 后依然出现错误，可能是vim 有修改，或使用macvim 替换。
+解决：使用如下命令`git config --global core.editor $(which vim)`不指定vim 实际目录，使用变量引用。

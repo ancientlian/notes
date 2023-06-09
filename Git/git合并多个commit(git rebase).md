@@ -1,6 +1,6 @@
 # git rebase
 
-开发过程中，本地通常会有无数次 commit ，可以合并“相同功能”的多个 commit，以保持历史的简洁
+开发过程中，本地通常会有无数次 commit ，可以合并“相同功能”的多个 commit，以保持历史的简洁.rebase之前记得先`git stash`当前改动
 
 1、先 `git log` 查看分支
 
@@ -19,7 +19,7 @@ git rebase -i [commitid]
 
 vim编辑器，按i编辑，将后4个commit的pick修改为fixup，保留第一个pick。按esc键，输入`:wq`保存退出。
 
->pick：使用commit
+pick：使用commit
 reword：使用commit，修改commit信息
 e, edit = use commit, but stop for amending
 squash：使用commit，将commit信息合入上一个commit
