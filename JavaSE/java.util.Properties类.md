@@ -2,9 +2,11 @@
 > A property list can contain another property list as its "defaults"; this second property list is searched if the property key is not found in the original property list.
 > Because Properties inherits from **Hashtable**, the put and putAll methods can be applied to a Properties object. Their use is strongly discouraged as they allow the caller to insert entries whose keys or values are not Strings. The setProperty method should be used instead. If the store or save method is called on a "compromised" Properties object that contains a non-String key or value, the call will fail. Similarly, the call to the propertyNames or list method will fail if it is called on a "compromised" Properties object that contains a non-String key.
 
+说人话: 一个持久的属性集，属性列表以key-value的形式存在;经常用来读取配置文件
+
 # 特点
 
-- Hashtable<Object,Object>的子类
+- `Hashtable<Object,Object>`的子类
 - 可持久属性集
 - 保存在流中或从流中加载
 - 每个键和对应的值都是一个字符串（String类型）
@@ -98,15 +100,21 @@ prop.list(System.out);
 # 函数总览API
 `getProperty(String key)`
 在此属性列表中搜索具有指定键的属性。如果在此属性列表中找不到该键，则会检查默认属性列表及其默认值（递归）。如果未找到该属性，则该方法返回默认值参数。
+
 `list(PrintStream out)`
 将此属性列表打印到指定的输出流。此方法对于调试很有用。
-`load(InputStream inStream)`  
+
+`load(InputStream inStream)` 
 从输入字节流中读取属性列表（键和元素对）。输入流采用加载（Reader）中指定的简单的面向行的格式，并假定使用ISO 8859-1字符编码;即每个字节是一个Latin1字符。不在Latin1中的字符和某些特殊字符在使用Unicode转义符的键和元素中表示。 此方法返回后，指定的流仍保持打开状态。
+
 `setProperty(String key, String value)` 
 调用 Hashtable 的方法 put 。他通过调用基类的put方法来设置 键值对。
+
 `store(OutputStream out, String comments)` 
 将此Properties表中的此属性列表（键和元素对）以适合使用load（InputStream）方法加载到Properties表的格式写入输出流。 此Properties方法不会写出此Properties表的defaults表中的属性（如果有）。
+
 `storeToXML(OutputStream os, String comment, String encoding) `
 使用指定的编码发出表示此表中包含的所有属性的XML文档。
-`stringPropertyNames()`  
+
+`stringPropertyNames()` 
 返回此属性列表中的一组键，其中键及其对应的值是字符串，如果尚未从主属性列表中找到相同名称的键，则包括默认属性列表中的不同键。键或键不是String类型的属性将被省略。

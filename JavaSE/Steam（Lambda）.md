@@ -1,27 +1,24 @@
-[Java Stream.docx](https://www.yuque.com/attachments/yuque/0/2022/docx/25408520/1671081730107-585a0116-ffe2-4ef8-aac6-b6d8f862416d.docx?_lake_card=%7B%22src%22%3A%22https%3A%2F%2Fwww.yuque.com%2Fattachments%2Fyuque%2F0%2F2022%2Fdocx%2F25408520%2F1671081730107-585a0116-ffe2-4ef8-aac6-b6d8f862416d.docx%22%2C%22name%22%3A%22Java%20Stream.docx%22%2C%22size%22%3A21668%2C%22type%22%3A%22application%2Fvnd.openxmlformats-officedocument.wordprocessingml.document%22%2C%22ext%22%3A%22docx%22%2C%22source%22%3A%22%22%2C%22status%22%3A%22done%22%2C%22mode%22%3A%22title%22%2C%22download%22%3Atrue%2C%22taskId%22%3A%22uded3a86a-de55-453e-a0bc-c682d53c5b1%22%2C%22taskType%22%3A%22upload%22%2C%22__spacing%22%3A%22both%22%2C%22id%22%3A%22uff7a34bc%22%2C%22margin%22%3A%7B%22top%22%3Atrue%2C%22bottom%22%3Atrue%7D%2C%22card%22%3A%22file%22%7D)
 
-| 中间操作
-intermediate operations | 无状态 | 过滤      filter |
-| --- | --- | --- |
-|  |  | 映射      map |
-|  |  | 扁平化    flatMap |
-|  |  | 遍历      peek |
-|  | 有状态 | 去重     distinct |
-|  |  | 跳过     skip |
-|  |  | 截断     limit |
-|  |  | 排序     sorted |
-| 终端操作
-terminal operations | 非短路 | 遍历       forEach、forEachOrdered |
-|  |  | 规约       reduce |
-|  |  | 最大值     max |
-|  |  | 聚合       collect |
-|  |  | 最小值     min |
-|  |  | 计数       count |
-|  | 短路 | 所有匹配    allMatch |
-|  |  | 任意匹配    anyMatch |
-|  |  | 不匹配      noneMatch |
-|  |  | 查找首个    findFirst |
-|  |  | 查找任意    findAny |
+| 中间操作 intermediate operations | 无状态 | 过滤      filter                   |
+| -------------------------------- | ------ | ---------------------------------- |
+|                                  |        | 映射      map                      |
+|                                  |        | 扁平化    flatMap                  |
+|                                  |        | 遍历      peek                     |
+|                                  | 有状态 | 去重     distinct                  |
+|                                  |        | 跳过     skip                      |
+|                                  |        | 截断     limit                     |
+|                                  |        | 排序     sorted                    |
+| 终端操作 terminal operations     | 非短路 | 遍历       forEach、forEachOrdered |
+|                                  |        | 规约       reduce                  |
+|                                  |        | 最大值     max                     |
+|                                  |        | 聚合       collect                 |
+|                                  |        | 最小值     min                     |
+|                                  |        | 计数       count                   |
+|                                  | 短路   | 所有匹配    allMatch               |
+|                                  |        | 任意匹配    anyMatch               |
+|                                  |        | 不匹配      noneMatch              |
+|                                  |        | 查找首个    findFirst              |
+|                                  |        | 查找任意    findAny                |
 
 
 # Collector
@@ -98,7 +95,9 @@ public interface BiFunction<T, U, R> {
 ```
 
 ## `Optional<T> reduce(BinaryOperator<T> accumulator);`
-reduce(BinaryOperator<T> accumulator)方法需要一个函数式接口参数，该函数式接口需要两个参数，返回一个结果(reduce中返回的结果会作为下次累加器计算的第一个参数)，也就是所讲的累加器。
+
+`reduce(BinaryOperator<T> accumulator)`方法需要一个函数式接口参数，该函数式接口需要两个参数，返回一个结果(reduce中返回的结果会作为下次累加器计算的第一个参数)，也就是所讲的累加器。
+
 ```java
 @Test
 public void reduceTest2() {
@@ -114,6 +113,7 @@ public void reduceTest2() {
     System.out.println(accResult);
 }
 ```
+
 结果：
 ```java
 acc : 6

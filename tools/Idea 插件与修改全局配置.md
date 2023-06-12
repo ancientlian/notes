@@ -29,7 +29,7 @@
 **File Expander** 反编译，还可以打开 tar.gz，zip 等压缩文件
 **GitToolBox** 它能直接提示你远程版本库里有多少文件更新，你有多少文件没有提交到版本库，甚至可以显示上一次提交的时间和版本更新者。
 **VisualGC** JVM 堆栈可视化工具
-idea上 类调用时序图 SequenceDiagram for IntelliJ IDEA
+SequenceDiagram for IntelliJ IDEA 类调用时序图
 打字效果 Power Mode II
 代码生成器 codehelper.generator 或者 GenerateAllSetter
 **高亮提示 HighlightBracketPair**

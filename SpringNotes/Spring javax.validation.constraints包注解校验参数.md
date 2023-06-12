@@ -332,11 +332,279 @@ public class ServiceImpl implements Service {
 
 ```
 
-`@Valid`注解一定要标在接口方法需要校验的参数上，不能标在实现类的方法参数上
+==`@Valid`注解一定要标在接口方法需要校验的参数上，不能标在实现类的方法参数上==
 
 对于`@Validated`注解，无论是基本数据类型校验还是Bean校验，都要加这个注解
 
 校验失败的异常是`javax.validation.ConstraintViolationException`
+
+## 分组检验
+
+场景: 如新增id必需为空(数据库自增id), 修改id必需不为空
+
+### 1.在实体类中新建接口作为分组,字段添加分组注解
+
+```java
+public class Employee {  
+  
+    public interface Add{}  
+  
+    public interface Update{}  
+  
+    @Null(message = "新增ID必需为空", groups = {Add.class})  
+    @NotNull(message = "更新ID必需不为空", groups = {Update.class})  
+    private Long id;
+    
+}
+```
+
+### 2. Controller增加参数注解,指定启用分组
+
+```java
+@PostMapping("/ee/add")  
+public ServerResponseEntity<String> addEmployee(@RequestBody @Validated({Employee.Add.class}) Employee employee){  
+    return ServerResponseEntity.success();  
+}  
+@PutMapping("/ee/update")  
+public ServerResponseEntity<String> updateEmployee(@RequestBody @Validated({Employee.Update.class}) Employee employee){  
+    return ServerResponseEntity.success();  
+}
+```
+
+==如果在Controller中的方法给参数指定了校验分组，那么实体类中标注了校验注解，但是**没有指定分组的校验规则将不生效**==
+
+没有指定分组的校验注解，都属于默认`Default`分组,想要增加默认的校验,添加`Default`分组即可
+
+```java
+@PostMapping("/ee/add")  
+public ServerResponseEntity<String> addEmployee(@RequestBody @Validated({Employee.Add.class, Default.class}) Employee employee){  
+    return ServerResponseEntity.success();  
+}  
+@PutMapping("/ee/update")  
+public ServerResponseEntity<String> updateEmployee(@RequestBody @Validated({Employee.Update.class, Default.class}) Employee employee){  
+    return ServerResponseEntity.success();  
+}
+```
+
+### 集合的分组校验
+
+接收参数为`List`集合,分组校验会失效,需要**自定义校验注解**。创建注解`@ValidListGroup`，自定义一个属性表示用哪个分组对集合进行校验
+
+自定义注解
+```java
+package com.example.springquickdemo.annotation.validator;  
+  
+import javax.validation.Constraint;  
+import javax.validation.Payload;  
+import javax.validation.groups.Default;  
+import java.lang.annotation.*;  
+  
+/**  
+ * @author lian  
+ */
+@Target({ElementType.FIELD, ElementType.PARAMETER})  
+@Retention(RetentionPolicy.RUNTIME)  
+@Documented  
+@Constraint(validatedBy = {ListGroupValidator.class})  
+public @interface ValidListGroup {  
+  
+    /**  
+     * 自定义分组校验属性  
+     */  
+    Class<?>[] groupings() default {Default.class};  
+  
+    String message() default "分组校验参数有误";  
+  
+    Class<?>[] groups() default {};  
+  
+    Class<? extends Payload>[] payload() default {};  
+  
+    /**  
+     * 快速失败  
+     */  
+    boolean quickFail() default false;  
+  
+}
+```
+
+自定义校验器
+```java
+package com.example.springquickdemo.annotation.validator;  
+  
+import com.example.springquickdemo.exception.ListGroupValidException;  
+import com.example.springquickdemo.util.ValidatorUtils;  
+  
+import javax.validation.ConstraintValidator;  
+import javax.validation.ConstraintValidatorContext;  
+import javax.validation.ConstraintViolation;  
+import java.util.HashMap;  
+import java.util.List;  
+import java.util.Map;  
+import java.util.Set;  
+  
+/**  
+ * @author lian  
+ */public class ListGroupValidator implements ConstraintValidator<ValidListGroup, List> {  
+  
+    /**  
+     * 自定义注解@ValidListGroup中指定的校验分组  
+     */  
+    private Class<?>[] groupings;  
+  
+    private boolean quickFail;  
+  
+    /**  
+     * Initializes the validator in preparation for     */    @Override  
+    public void initialize(ValidListGroup constraintAnnotation) {  
+        groupings = constraintAnnotation.groupings();  
+        quickFail = constraintAnnotation.quickFail();  
+        ConstraintValidator.super.initialize(constraintAnnotation);  
+    }  
+  
+    /**  
+     * Implements the validation logic.     */    @Override  
+    public boolean isValid(List value, ConstraintValidatorContext context) {  
+        Map<Integer, Set<ConstraintViolation<Object>>> errors = new HashMap<>(16);  
+        for (int i = 0; i < value.size(); i++) {  
+            Object object = value.get(i);  
+            // 用工具类获取validator对象，进行分组校验，返回错误结果  
+            Set<ConstraintViolation<Object>> error = ValidatorUtils.validator.validate(object, groupings);  
+            if (error.size() > 0) {  
+                errors.put(i, error);  
+                if (quickFail) {  
+                    throw new ListGroupValidException(errors);  
+                }  
+            }  
+        }  
+        if (errors.size() > 0) {  
+            throw new ListGroupValidException(errors);  
+        }  
+        return true;  
+    }  
+}
+
+
+@Component  
+public class ValidatorUtils {  
+    public static Validator validator;  
+  
+    /**  
+     * 注入Validator对象  
+     */  
+    @Autowired  
+    public void setValidator(Validator validator) {  
+        ValidatorUtils.validator = validator;  
+    }  
+}
+```
+
+自定义异常
+```java
+@Getter  
+@Setter  
+public class ListGroupValidException extends RuntimeException {  
+  
+    private Map<Integer, Set<ConstraintViolation<Object>>> errors;  
+  
+    public ListGroupValidException(Map<Integer, Set<ConstraintViolation<Object>>> errors) {  
+        this.errors = errors;  
+    }  
+  
+}
+```
+
+异常处理器处理自定义异常
+```java
+/**  
+ * 处理自定义集合分组校验注解的校验失败异常  
+ */  
+@ExceptionHandler(ValidationException.class)  
+public ResponseEntity<ServerResponseEntity<?>> handleValidException(ValidationException e) {  
+    log.error("ValidationException ", e);  
+  
+    Map<Integer, Map<Path, String>> errorMap = new HashMap<>(8);  
+    Throwable throwable = e.getCause();  
+    ListGroupValidException exception = (ListGroupValidException) throwable;  
+    Map<Integer, Set<ConstraintViolation<Object>>> errors = exception.getErrors();  
+    // 将异常信息收集到Map，key为集合中校验失败元素的索引，value为校验失败字段和原因  
+    errors.forEach((k, v) -> {  
+        errorMap.put(k, v.stream().collect(Collectors.toMap(ConstraintViolation::getPropertyPath, ConstraintViolation::getMessage)));  
+    });  
+    return ResponseEntity.status(HttpStatus.OK)  
+            .body(ServerResponseEntity.fail(ResponseEnum.METHOD_ARGUMENT_NOT_VALID, errorMap));  
+}
+```
+
+在Controller对应的方法中使用自定义注解,已经可以实现集合的分组校验. 如果想要一旦对某个对象的某个字段校验失败，立即停止校验，返回错误，开启快速失败模式即可
+
+```java
+@PostMapping("/ee/addList")  
+public ServerResponseEntity<String> addEmployeeList(@RequestBody @ValidListGroup(groupings = {Employee.Add.class, Default.class}) List<Employee> employeeList) {  
+    return ServerResponseEntity.success();  
+}  
+  
+@PutMapping("/ee/updateList")  
+public ServerResponseEntity<String> updateEmployeeList(@RequestBody @ValidListGroup(groupings = {Employee.Update.class, Default.class}) List<Employee> employeeList) {  
+    return ServerResponseEntity.success();  
+}
+```
+
+开启快速失败`quickFail = true`
+```java
+@PutMapping("/ee/updateList")  
+public ServerResponseEntity<String> updateEmployeeList(@RequestBody @ValidListGroup(groupings = {Employee.Update.class, Default.class}, quickFail = true) List<Employee> employeeList) {  
+    return ServerResponseEntity.success();  
+}
+```
+
+## Bean属性之间的关联校验
+
+场景: 添加、更新员工2合1的方法, 传入的对象id为null，就是添加，id不为null就是更新. 添加时员工姓名不能为空，修改时可以为空; 员工姓名需要根据id的值是否为null来决定是否采用非空校验
+
+实现
+### 1.添加字段校验注解,指定分组
+
+```java
+@NotBlank(message = "员工姓名不能为空", groups = Add.class)  
+private String name;
+```
+
+### 2.校验分组处理器
+
+```java
+public class EmployeeGroupSequenceProvider implements DefaultGroupSequenceProvider<Employee> {  
+  
+    @Override  
+    public List<Class<?>> getValidationGroups(Employee employee) {  
+        // 创建需要校验的分组集合  
+        List<Class<?>> defaultGroupSequence = new ArrayList<>();  
+        // 添加默认分组Default  
+        defaultGroupSequence.add(Employee.class);  
+        // 根据employee的id是否为空，决定是否加上Add组  
+        Optional.ofNullable(employee).ifPresent(e -> {  
+            Long id = e.getId();  
+            if (id == null) {  
+                // id为空，加上Add组  
+                defaultGroupSequence.add(Employee.Add.class);  
+            }  
+        });  
+        return defaultGroupSequence;  
+    }  
+}
+```
+
+### 3.添加校验注解
+
+```java
+@GroupSequenceProvider(EmployeeGroupSequenceProvider.class)  
+public class Employee {
+
+	@NotBlank(message = "员工姓名不能为空", groups = Add.class)  
+	private String name;
+	
+	......
+}
+```
 
 ## 统一异常处理
 
@@ -359,9 +627,7 @@ public class ValidateController {
 
 如果我们在Controller方法参数中不加`BindingResult`对象捕获校验失败信息，那么校验失败信息会以`org.springframework.web.bind.MethodArgumentNotValidException`异常形式被异常解析器处理
 
-如果Controller中需要校验的参数是带泛型的List，那么在参数对应位置标注`@Valid`，同时要在类上标注`@Validated`，这样校验才会生效。并且效果是针对List中的每个对象都做校验; 
-
-校验失败后会抛出`javax.validation.ConstraintViolationException`异常，并且会用从0开始的索引来表明是List中的哪个对象的字段校验不通过
+如果Controller中需要校验的参数是带泛型的List，那么在参数对应位置标注`@Valid`，同时要在类上标注`@Validated`，这样校验才会生效。并且效果是针对List中的每个对象都做校验; 校验失败后会抛出`javax.validation.ConstraintViolationException`异常，并且会用从0开始的索引来表明是List中的哪个对象的字段校验不通过
 
 ### 
 

@@ -1,6 +1,7 @@
 # 为什么用？
 1. **在编译时会有更强的类型检查**
 2. **不需类型转化**
+3. **使算法更加通用**
 
 没有泛型
 ```java
@@ -8,6 +9,7 @@ List list = new ArrayList();
 list.add("hello");
 String s = (String) list.get(0);
 ```
+
 使用泛型
 ```java
 List<String> list = new ArrayList<String>();
@@ -15,12 +17,10 @@ list.add("hello");
 String s = list.get(0);   // no cast
 ```
 
-
-
-3. **使算法更加通用**
-
 # 泛型使用
+
 ## 泛型类
+
 ```java
 public class Info<T> {
 	private T value;
@@ -35,6 +35,7 @@ public class Info<T> {
 }
 
 ```
+
 ## 泛型方法
 ```java
 public class Util {
@@ -69,22 +70,19 @@ public interface Content<T> {
 ```
 
 
-
-
-
-
-
 # 通配符 Wildcards
 > In generic code, the question mark (?), called the _wildcard_, represents an unknown type. 
 
  
 ## 上边界 Upper Bounded Wildcards
+
 使用`extends`关键字
 示例：
 ```java
 public static void process(List<? extends Foo> list) { /* ... */ }
 ```
-> The upper bounded wildcard, <? extends Foo>, where Foo is any type, matches Foo and any subtype of Foo. The process method can access the list elements as type Foo
+
+> The upper bounded wildcard, `<? extends Foo>`, where Foo is any type, matches Foo and any subtype of Foo. The process method can access the list elements as type Foo
 
 ```java
 public static void process(List<? extends Foo> list) {
@@ -93,6 +91,7 @@ public static void process(List<? extends Foo> list) {
     }
 }
 ```
+
 计算和示例：
 ```java
 public static double sumOfList(List<? extends Number> list) {
@@ -102,6 +101,7 @@ public static double sumOfList(List<? extends Number> list) {
     return s;
 }
 ```
+
 使用方法
 ```java
 List<Integer> li = Arrays.asList(1, 2, 3);
@@ -114,7 +114,9 @@ System.out.println("sum = " + sumOfList(ld));
 
 
 ## 无边界 Unbounded Wildcards
+
 直接用`?`即可
+
 ### 应用场景
 
 - 可以使用 Object 类中提供的功能来实现的方法。
@@ -136,10 +138,6 @@ printList(ls);
 ```
 
 
-
-
-
-
 ## 下边界 Lower Bounded Wildcards
 使用`super`关键字
 
@@ -153,11 +151,8 @@ public static void addNumbers(List<? super Integer> list) {
 }
 ```
 
+# 类型擦除 Type Erasure
 
-
-
-
-# *类型擦除 Type Erasure
 > Generics were introduced to the Java language to provide tighter type checks at compile time and to support generic programming. To implement generics, the Java compiler applies type erasure to:
 > - Replace all type parameters in generic types with their bounds or Object if the type parameters are unbounded. The produced bytecode, therefore, contains only ordinary classes, interfaces, and methods.
 > - Insert type casts if necessary to preserve type safety.
@@ -170,6 +165,7 @@ Type erasure ensures that no new classes are created for parameterized types; co
 - 生成桥接方法以保留扩展泛型类型中的多态性。类型擦除确保不为参数化类型创建新类；因此，泛型不会产生运行时开销。
 
 ## 泛型类型擦除
+
 代码
 ```java
 public class Node<T> {
@@ -186,6 +182,7 @@ public class Node<T> {
     // ...
 }
 ```
+
 用`Object`代替无边界的泛型参数`T`
 ```java
 public class Node {
@@ -219,6 +216,7 @@ public class Node<T extends Comparable<T>> {
     // ...
 }
 ```
+
 擦除结果
 ```java
 public class Node {
@@ -237,6 +235,7 @@ public class Node {
 ```
 
 ## 方法擦除
+
 前
 ```java
 // Counts the number of occurrences of elem in anArray.
@@ -261,10 +260,7 @@ public static int count(Object[] anArray, Object elem) {
 ```
 
 
-
-
 ## 桥方法 Bridge Methods
-
 
 
 
@@ -273,13 +269,13 @@ public static int count(Object[] anArray, Object elem) {
 
 - E - Element (used extensively by the Java Collections Framework)
 - K - Key
-- N - Number
-- T - Type
 - V - Value
+- T - Type
+- N - Number
 - S,U,V etc. - 2nd, 3rd, 4th types
+
 # 参考文章
+
 [https://docs.oracle.com/javase/tutorial/java/generics/index.html](https://docs.oracle.com/javase/tutorial/java/generics/index.html)
 [https://www.cnblogs.com/XiiX/p/14719568.html](https://www.cnblogs.com/XiiX/p/14719568.html)
 [https://www.yuque.com/snailclimb/mf2z3k/ipqccd](https://www.yuque.com/snailclimb/mf2z3k/ipqccd#acb25cb7)
-
-
