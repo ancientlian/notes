@@ -31,7 +31,7 @@
 </dependency>
 ```
 
-其中主要依赖为子包`org.hibernate.validator:hibernate-validator`, 非spring
+其中主要依赖为子包`org.hibernate.validator:hibernate-validator`, 非spring直接引入子包
 
 ## 可用注解
 
