@@ -52,8 +52,6 @@ r读 数字4，w写数字2，x执行数字1，3个一组
 df -k：以KB为单位显示磁盘使用量和占用率
 df -m：以Mb为单位显示磁盘使用量和占用率
 
-
-
 ```
 
 - PID：当前运行进程的ID
@@ -69,6 +67,48 @@ df -m：以Mb为单位显示磁盘使用量和占用率
 - TIME+：该进程启动后占用的总的CPU时间，即占用CPU使用时间的累加值。
 - COMMAND：进程启动命令名称
 
-### 参考
+[查看Linux磁盘及内存占用情况](https://blog.csdn.net/u014311799/article/details/78775175)
 
-[Site Unreachable](https://blog.csdn.net/u014311799/article/details/78775175)
+## tail
+
+```bash
+tail [参数] [文件]
+-f 循环读取
+-q 不显示处理信息
+-v 显示详细的处理信息
+-c<数目> 显示的字节数
+-n<行数> 显示文件的尾部 n 行内容
+--pid=PID 与-f合用,表示在进程ID,PID死掉之后结束
+-q, --quiet, --silent 从不输出给出文件名的首部
+-s, --sleep-interval=S 与-f合用,表示在每次反复的间隔休眠S秒
+```
+
+### 示例
+
+```bash
+# 当将某些行添加至 notes.log 文件时，tail 命令会继续显示这些行。 
+# 显示一直继续，直到您按下（Ctrl-C）组合键停止显示。
+tail -n +20 notes.log
+```
+
+## JPS
+
+ jps是jdk提供的一个查看当前java进程的小工具， 可以看做是`JavaVirtual Machine Process Status Tool`的缩写。
+
+命令格式：`jps [options ] [ hostid ] `
+
+[options]选项 ：
+```text
+-q：仅输出VM标识符，不包括classname,jar name,arguments in main method 
+-m：输出main method的参数 
+-l：输出完全的包名，应用主类名，jar的完全路径名 
+-v：输出jvm参数 
+-V：输出通过flag文件传递到JVM中的参数(.hotspotrc文件或-XX:Flags=所指定的文件 
+-Joption：传递参数到vm,例如:-J-Xms512m
+```
+
+[hostid]：
+`[protocol:][[//]hostname][:port][/servername]`
+
+命令的输出格式 ：
+`lvmid [ [ classname| JARfilename | "Unknown"] [ arg* ] [ jvmarg* ] ]`

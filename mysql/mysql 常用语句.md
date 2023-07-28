@@ -48,3 +48,19 @@ WHERE table1.some_column = table2.some_column
 select info.id, info.name, info.stu_num, extra_info.hobby, extra_info.sex from info, extra_info where info.stu_num = extra_info.stu_id;
 
 ```
+
+
+## 联表update
+
+```sql
+BEGIN;
+	UPDATE t_contract_info c
+	INNER JOIN t_bill_info b ON b.contractNo = c.contractNo AND b.billSubType = '押金' 
+	SET c.deposit = b.billAmount,
+	b.billPaidAmount = b.billAmount,
+	b.billStatus = '1' 
+	WHERE
+	c.contractNo = 'ABC123';
+COMMIT;
+```
+
