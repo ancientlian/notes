@@ -23,13 +23,13 @@ docker run -d -p 80:80 docker/getting-started
 docker run -dp 80:80 docker/getting-started
 ```
 
-### What is a container?
+### 容器
 
 Simply put, a container is simply another process on your machine that has been isolated from all other processes on the host machine. 沙箱隔离机制
 
 That isolation leverages [kernel namespaces and cgroups](https://medium.com/@saschagrunert/demystifying-containers-part-i-kernel-space-2c53d6979504), features that have been in Linux for a long time.
 
-## What is a container image?
+## 镜像
 
 When running a container, it uses an isolated filesystem. This custom filesystem is provided by a **container image**. Since the image contains the container's filesystem, it must contain everything needed to run an application - all dependencies, configuration, scripts, binaries, etc.The image also contains other configuration for the container, such as environment variables, a default command to run, and other metadata.
 
@@ -48,11 +48,7 @@ docker run -d -p 80:80 --name nginx02 -v F:\WorkSpace\nginx\nginx.conf:/etc/ngin
 > [Error - nginx: [emerg\] "server" directive is not allowed here in /etc/nginx/nginx.conf:1](https://stackoverflow.com/questions/59848507/error-nginx-emerg-server-directive-is-not-allowed-here-in-etc-nginx-ngin)
 >
 > In your context you need to wrap server in http block. Or move you config file not by replacing the default config file, but rather replacing a default server config located in /etc/nginx/conf.d/ So you can use something like
->
-> ```text
->  - ./nginx.conf:/etc/nginx/conf.d/default.conf
-> ```
->
+>  `./nginx.conf:/etc/nginx/conf.d/default.conf`
 > for volumes for nginx. That will rewrite your default server config. You can also copy it to sites-enabled folder if you planning to use multiple config files.
 >
 > Or you can modify your nginx config, by starting with wrapping it with http block
@@ -90,4 +86,4 @@ run的命令很多，要是之后忘了配置一些参数，需要重新run新�
 
 ## /bin/bash  docker后台必须运行一个进程
 
-`docker run -i -t tomcat /bin/bash`中的/bin/bash的作用是因为docker后台必须运行一个进程，否则容器就会退出，在这里表示启动容器后启动bash。
+`docker run -i -t tomcat /bin/bash`中的`/bin/bash`的作用是因为docker后台必须运行一个进程，否则容器就会退出，在这里表示启动容器后启动bash。
