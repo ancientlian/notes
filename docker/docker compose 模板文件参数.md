@@ -1,3 +1,4 @@
+
 ```yml
 version: "3"
 services:
@@ -85,7 +86,7 @@ restart: unless-stopped
 
 ### volumes
 
-将主机的数据卷或着文件挂载到容器里。
+将主机的数据卷或着文件挂载到容器里。可以设置为宿主机路径(`HOST:CONTAINER`)或者数据卷名称(`VOLUME:CONTAINER`)，并且可以设置访问模式 （`HOST:CONTAINER:ro`）,路径支持相对路径。
 
 ```yml
 version: "3.7"
@@ -96,3 +97,28 @@ services:
       - "/localhost/postgres.sock:/var/run/postgres/postgres.sock"
       - "/localhost/data:/var/lib/postgresql/data"
 ```
+
+
+
+### 使用变量、读取变量
+
+Compose 模板文件支持动态读取主机的系统环境变量和当前目录下的 `.env` 文件中的变量。
+```yml
+version: "3"
+services:
+
+db:
+  image: "mongo:${MONGO_VERSION}"
+```
+
+若当前目录存在 `.env` 文件，执行 `docker-compose` 命令时将从该文件中读取变量。
+
+在当前目录新建 `.env` 文件并写入以下内容。
+
+```text
+# 支持 # 号注释
+MONGO_VERSION=3.6
+```
+此时执行 `docker-compose up` 则会启动一个 `mongo:3.6` 镜像的容器。
+
+[Compose 模板文件 - Docker — 从入门到实践](https://yeasy.gitbook.io/docker_practice/compose/compose_file)
