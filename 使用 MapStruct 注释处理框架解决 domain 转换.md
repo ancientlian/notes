@@ -84,8 +84,53 @@ public interface CarAssertApiMapper {
 
 ## 数据类型转换
 
-MapStruct 在大多数情况下会自动处理类型转换。
+MapStruct 在大多数情况下会自动处理类型转换。如原始类型和相应的包装类、原始类型和字符串、枚举类型和字符串、在 BigInt、BigDecimal 和 String 之间等隐式转换。
 
-如果有一个场景需要进行时间的格式化，那么就要借助表达式
+### 数字格式化
+```java
+@Mapping(source = "price", target = "price", numberFormat = "$#.00") 
+Car getModelFromEntity(CarEntity carEntity); 
+```
 
+### 时间格式化
+
+```java
+@Mapping(source = "createDate", target = "createDateTime", dateFormat = "yyyy-MM-dd")  
+SysLogVO dataConvert(SysLog sysLog);
+```
+
+### 自定义表达式
+
+```java
+@Mapping(target = "createDateTime", expression = "java(getDate(sysLog.getCreateDate()))")  
+SysLogVO dataExpressionConvert(SysLog sysLog);  
+  
+default String getDate(Date date) {  
+    SimpleDateFormat sdf = new SimpleDateFormat("dd.MM-yyyy");  
+    return sdf.format(date);  
+}
+```
+
+如果方法存在于不同的类中，使用 `new class-name.target-method()`
+
+### 常量映射到属性
+
+```java
+@Mapping(target = "brand", constant = "BMW") 
+Car getModelFromEntity(CarEntity carEntity);
+```
+
+### 默认值
+
+defaultValue 属性在source为null的情况下传递默认值
+```java
+@Mapping(target = "target-property", source="source-property" defaultValue = "default-value")
+```
+
+### 默认计算表达式
+
+defaultExpression 传递一个计算值，以防源属性为空；如果 `source-property` 为 `null`，则 `target-property` 将设置为 `default-value-method` 的结果
+```java
+@Mapping(source = "name", target = "name", defaultExpression = "java(UUID.randomUUID().toString())")
+```
 
