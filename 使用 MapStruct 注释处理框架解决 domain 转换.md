@@ -1,5 +1,5 @@
 `BeanUtils.copyProperties()` 和 mapstruct 都是浅拷贝,区别在于两者性能不同,mapstruct 没有使用反射技术，使性能更优。
-mapstrut一共两个主要的包，org.mapstruct.mapstruct包含里面常用的注释，org.mapstruct.mapstruct-processor处理注释的实现。
+mapstrut一共两个主要的包，`org.mapstruct.mapstruct`包含里面常用的注释，`org.mapstruct.mapstruct-processor`处理注释的实现。
 
 ## 依赖
 
