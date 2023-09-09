@@ -53,3 +53,10 @@ create user 'root'@'%' identified with mysql_native_password by 'root';
 grant all privileges on *.* to 'root'@'%' with grant option;
 flush privileges;
 ```
+
+
+## 挂载外卷
+
+```java
+--volume=/Users/lianzhiqiang/Documents/docker_vol/mysql/data:/var/lib/mysql --volume=/Users/lianzhiqiang/Documents/docker_vol/mysql/conf:/etc/mysql/my.cnf --volume=/var/lib/mysql 
+```
