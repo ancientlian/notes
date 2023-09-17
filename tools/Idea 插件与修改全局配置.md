@@ -32,11 +32,18 @@
 SequenceDiagram for IntelliJ IDEA 类调用时序图
 打字效果 Power Mode II
 代码生成器 codehelper.generator 或者 GenerateAllSetter
-**高亮提示 HighlightBracketPair**
-JSON转领域对象工具：GsonFormat
-[Atom Material Icons]  这个插件通过使用 [Atom 文件图标](https://github.com/file-icons/atom)替换默认图标
+**HighlightBracketPair**高亮提示 
+**GsonFormat** JSON转对象工具：自动生成对象的嵌套结构代码
+**Atom Material Icons**  这个插件通过使用 [Atom 文件图标](https://github.com/file-icons/atom)替换默认图标
 GitToolBox
 
+**Jump to Line** 帮忙断点跳转任何一行 ，它允许您转到任意行并设置执行点而无需执行前面的代码。
+
+**maven helper**  它可以让您查看、分析和排除相互冲突的依赖项。 还可以运行和调试 Maven 目标，等等。
+
+**Extra Icons** 它增加了一组默认情况下 IntelliJ IDEA 不支持的图标。
+**Auto filling Java call arguments** 代码生成插件。通过快捷键自动补全函数的调用参数，针对包含大量参数的构造函数和方法非常有用！
+**CodeGlance** 代码浏览小地图插件。
 
 ## 主题
 
