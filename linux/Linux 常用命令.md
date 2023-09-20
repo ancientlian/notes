@@ -1,3 +1,4 @@
+# 常用linux
 
 ```bash
 cat /etc/passwd
@@ -43,7 +44,7 @@ r代表读权限，w代表写权限，x代表执行权限
 文件的创建者、创建者所在组、所有人
 r读 数字4，w写数字2，x执行数字1，3个一组
 
-第一组是自己的权限，第二组是自己所在组的权限，第三组是所有人的权限 
+第一组是自己的权限，第二组是自己所在组的权限，第三组是所有人的权限
 改变的话输入:`chmod 764 文件名`
 7=4+2+1, 6=4+2, 4=4
 
@@ -96,9 +97,10 @@ tail -n +20 notes.log
 
  jps是jdk提供的一个查看当前java进程的小工具， 可以看做是`JavaVirtual Machine Process Status Tool`的缩写。
 
-命令格式：`jps [options ] [ hostid ] `
+命令格式：`jps [options ] [ hostid ]`
 
 [options]选项 ：
+
 ```text
 -q：仅输出VM标识符，不包括classname,jar name,arguments in main method 
 -m：输出main method的参数 
@@ -115,7 +117,6 @@ tail -n +20 notes.log
 `lvmid [ [ classname| JARfilename | "Unknown"] [ arg* ] [ jvmarg* ] ]`
 
 ## tar 压缩
-
 
 ```bash
 tar [选项] [-f 压缩包名] 源文件或目录
