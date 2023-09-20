@@ -44,3 +44,12 @@ git clone https://github.com/zdharma-continuum/fast-syntax-highlighting.git ${ZS
 ### 配置 ~/.zshrc 配置文件
 
 配置插件、函数、source、alias
+
+## 增加zsh代理
+
+使用ClashX代理
+
+```text
+alias proxy='export all_proxy=socks5://127.0.0.1:7890'
+alias unproxy='unset all_proxy'
+```
