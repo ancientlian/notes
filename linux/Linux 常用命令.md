@@ -183,3 +183,11 @@ unzip
 -Z unzip -Z等于执行zipinfo指令
 
 ```
+
+## 修改默认Shell环境
+
+```shell
+# 修改为默认 shell 环境
+$ chsh -s /bin/bash
+#$ chsh -s /bin/zsh
+```
