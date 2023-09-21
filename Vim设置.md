@@ -4,8 +4,8 @@
 2. 使用brew安装vim
 3. 安装macvim
 
-
 ## 配置vim界面
+
 Vim 的全局配置一般在/etc/vim/vimrc或者/etc/vimrc，对所有用户生效。用户个人的配置在~/.vimrc。
 
 ```shell
@@ -60,4 +60,4 @@ vim ~/.vimrc #编辑vim的配置文件，没有则新建一个
  set autoread
 ```
 
-参考：https://blog.csdn.net/moumourenaini/article/details/115541521
+参考：<https://blog.csdn.net/moumourenaini/article/details/115541521>
