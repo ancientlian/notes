@@ -762,3 +762,27 @@ git pull origin main:side
 现：
 
 ![image-20210114140229802](GitNotes.assets/image-20210114140229802.png)
+
+## git config
+
+git查看配置
+
+```shell
+git config --local  --list
+git config --global  --list
+```
+
+全局代理
+
+
+目前在 Windows 10 上使用 Clash
+
+```shell
+git config --global http.proxy socks5://127.0.0.1:7890
+git config --global https.proxy socks5://127.0.0.1:7890
+```
+如果只想对某个地址进行代理，比如对 github.com 代理，就这样：
+
+```shell
+git config --global http.https://github.com.proxy socks5://127.0.0.1:7890
+```
