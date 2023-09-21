@@ -821,3 +821,27 @@ $ git config --global --unset user.xxx
 如果线上分支出了 bug ，这时候相关开发者应该基于预发布分支（「没有预发环境，就使用 master 分支」），新建一个 「bug 分支」用来临时解决 bug ，处理完后申请合并到 预发布 分支。这样做的好处就是：不会影响正在开发中的功能。
 「预发布环境的作用：」 预发布环境是正式发布前最后一次测试。因为在少数情况下即使预发布通过了，都不能保证正式生产环境可以100%不出问题；预发布环境的配置，数据库等都是跟线上一样；有些公司的预发布环境数据库是连接线上环境，有些公司预发布环境是单独的数据库；如果不设预发布环境，如果开发合并代码有问题，会直接将问题发布到线上，增加维护的成本。
 
+## 添加多个远程仓库
+
+```shell
+# 查看本地仓库关联的远程仓库情况
+git remote -v
+
+git remote set-url --add origin https://gitee.com/xxxx/xxxx.git
+
+$ git remote -v
+origin  https://github.com/xxxx/xxxx.git (fetch)
+origin  https://github.com/xxxx/xxxx.git (push)
+origin  https://gitee.com/xxxx/xxxx.git (push)
+```
+本地仓库可以同时推送到github和gitee，但只能从github拉取
+
+可以通过直接修改.git/config文件来实现同样的功能
+
+```text
+# 找到remote origin，添加url = 仓库地址
+[remote "origin"]
+        url = https://github.com/xxxx/xxxx.git
+        fetch = +refs/heads/*:refs/remotes/origin/*
+        url = https://gitee.com/xxxx/xxxx.git
+```
