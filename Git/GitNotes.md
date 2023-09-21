@@ -845,3 +845,6 @@ origin  https://gitee.com/xxxx/xxxx.git (push)
         fetch = +refs/heads/*:refs/remotes/origin/*
         url = https://gitee.com/xxxx/xxxx.git
 ```
+
+如果有冲突，解决完或者强制
+git push -f origin1 dev git push -f origin2 dev
