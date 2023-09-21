@@ -786,3 +786,38 @@ git config --global https.proxy socks5://127.0.0.1:7890
 ```shell
 git config --global http.https://github.com.proxy socks5://127.0.0.1:7890
 ```
+
+配置git
+```shell
+# 配置全局用户
+$ git config --global user.name "用户名"
+$ git config --global user.email "git账号"
+# 配置别名
+$ git config --global alias.co checkout
+$ git config --global alias.ss status
+$ git config --global alias.cm commit
+$ git config --global alias.br branch
+$ git config --global alias.rg reflog
+# 这里只是美化 log 的输出，实际使用时可以在 git lg 后面加命令参数，如：git lg -10 显示最近10条提交
+$ git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
+# 删除全局配置
+$ git config --global --unset alias.xxx
+$ git config --global --unset user.xxx
+```
+
+
+# Git 分支管理规范
+实际开发的时候，一人一条分支（个人见解：除非是大项目，参与的开发人员很多时，可以采用 feature 分支，否则一般的项目中，一个开发者一条分支够用了）。除此之外还要有一条 develop 开发分支，一条 test 测试分支，一条 release 预发布分支。
+- 「develop」：「开发分支」，开发人员每天都需要拉取/提交最新代码的分支；
+- 「test」：「测试分支」，开发人员开发完并自测通过后，发布到测试环境的分支；
+- 「release」：「预发布分支」，测试环境测试通过后，将测试分支的代码发布到预发环境的分支（「这个得看公司支不支持预发环境，没有的话就可以不采用这条分支」）；
+- 「master」：「线上分支」，预发环境测试通过后，运营/测试会将此分支代码发布到线上环境；
+
+大致流程：
+开发人员每天都需要拉取/提交最新的代码到 「develop 分支」；
+开发人员开发完毕，开始 「集成测试」，测试无误后提交到 「test 分支」并发布到测试环境，交由测试人员测试；
+测试环境通过后，发布到 「release 分支」 上，进行预发环境测试；
+预发环境通过后，发布到 「master 分支」上并打上标签（tag）；
+如果线上分支出了 bug ，这时候相关开发者应该基于预发布分支（「没有预发环境，就使用 master 分支」），新建一个 「bug 分支」用来临时解决 bug ，处理完后申请合并到 预发布 分支。这样做的好处就是：不会影响正在开发中的功能。
+「预发布环境的作用：」 预发布环境是正式发布前最后一次测试。因为在少数情况下即使预发布通过了，都不能保证正式生产环境可以100%不出问题；预发布环境的配置，数据库等都是跟线上一样；有些公司的预发布环境数据库是连接线上环境，有些公司预发布环境是单独的数据库；如果不设预发布环境，如果开发合并代码有问题，会直接将问题发布到线上，增加维护的成本。
+
