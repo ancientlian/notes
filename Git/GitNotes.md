@@ -1,3 +1,5 @@
+# Git
+
 ## 什么是git
 
 ### git与svn的区别
@@ -313,15 +315,12 @@ git rebase -i overHere --solution-ordering C3,C5,C4
 
 原：
 
-
 ```bash
 git rebase -i main --solution-ordering C4
 git rebase bugFix main
 ```
 
 现：
-
-
 
 #### 撤销变更
 
@@ -774,13 +773,13 @@ git config --global  --list
 
 全局代理
 
-
 目前在 Windows 10 上使用 Clash
 
 ```shell
 git config --global http.proxy socks5://127.0.0.1:7890
 git config --global https.proxy socks5://127.0.0.1:7890
 ```
+
 如果只想对某个地址进行代理，比如对 github.com 代理，就这样：
 
 ```shell
@@ -788,6 +787,7 @@ git config --global http.https://github.com.proxy socks5://127.0.0.1:7890
 ```
 
 配置git
+
 ```shell
 # 配置全局用户
 $ git config --global user.name "用户名"
@@ -805,9 +805,10 @@ $ git config --global --unset alias.xxx
 $ git config --global --unset user.xxx
 ```
 
-
 # Git 分支管理规范
+
 实际开发的时候，一人一条分支（个人见解：除非是大项目，参与的开发人员很多时，可以采用 feature 分支，否则一般的项目中，一个开发者一条分支够用了）。除此之外还要有一条 develop 开发分支，一条 test 测试分支，一条 release 预发布分支。
+
 - 「develop」：「开发分支」，开发人员每天都需要拉取/提交最新代码的分支；
 - 「test」：「测试分支」，开发人员开发完并自测通过后，发布到测试环境的分支；
 - 「release」：「预发布分支」，测试环境测试通过后，将测试分支的代码发布到预发环境的分支（「这个得看公司支不支持预发环境，没有的话就可以不采用这条分支」）；
@@ -834,6 +835,7 @@ origin  https://github.com/xxxx/xxxx.git (fetch)
 origin  https://github.com/xxxx/xxxx.git (push)
 origin  https://gitee.com/xxxx/xxxx.git (push)
 ```
+
 本地仓库可以同时推送到github和gitee，但只能从github拉取
 
 可以通过直接修改.git/config文件来实现同样的功能
