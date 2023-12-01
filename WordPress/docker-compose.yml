@@ -1,0 +1,12 @@
+# 使用自己配置的mysql数据库
+
+version: "3"
+services:
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "8000:80"
+    environment:
+      WORDPRESS_DB_HOST: 1234.aliyuncs.com:3306
+      WORDPRESS_DB_USER: 1234
+      WORDPRESS_DB_PASSWORD: 1234
