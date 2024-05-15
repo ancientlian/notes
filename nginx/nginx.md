@@ -1,4 +1,4 @@
-# nginx.conf配置文件
+# nginx.conf 配置文件
 
 ## （1）全局块
 
@@ -15,7 +15,7 @@ worker_processes  1;
 
 影响 Nginx 服务器与用户的网络连接
 
-```
+```text
 events {
     worker_connections  1024;
 }
@@ -40,11 +40,11 @@ events {
 
 **总结：**
 
-监听 80 端口，访问域名为192.168.17.129，不加端口号时默认为 80 端口，故访问该域名时会跳转到127.0.0.1:8080 路径上
+监听 80 端口，访问域名为 192.168.17.129，不加端口号时默认为 80 端口，故访问该域名时会跳转到 127.0.0.1:8080 路径上
 
 ## 示例二
 
-使用 nginx 反向代理，根据访问的路径跳转到不同端口的服务中，需要两个tomcat
+使用 nginx 反向代理，根据访问的路径跳转到不同端口的服务中，需要两个 tomcat
 
 （1）找到 nginx 配置文件，进行反向代理配置
 
@@ -60,7 +60,7 @@ events {
 
 `~*`：用于表示 uri 包含正则表达式，并且不区分大小写。
 
-`^~`：用于不含正则表达式的 uri 前，要求 Nginx 服务器找到标识 uri 和请求字符串匹配度最高的 location 后，立即使用此 location 处理请求，而不再使用 location块中的正则 uri 和请求字符串做匹配。
+`^~`：用于不含正则表达式的 uri 前，要求 Nginx 服务器找到标识 uri 和请求字符串匹配度最高的 location 后，立即使用此 location 处理请求，而不再使用 location 块中的正则 uri 和请求字符串做匹配。
 
 ==注意：如果 uri 包含正则表达式，则必须要有 `~`或者 `~*`标识。==
 
@@ -115,7 +115,7 @@ upstream server_pool{
 
 # 动静分离
 
-严格意义上说应该是动态请求跟静态请求分开，可以理解成使用 Nginx处理静态页面，Tomcat 处理动态页面。
+严格意义上说应该是动态请求跟静态请求分开，可以理解成使用 Nginx 处理静态页面，Tomcat 处理动态页面。
 
 动静分离从目前实现角度来讲大致分为两种，
 **一种**是纯粹把静态文件独立成单独的域名，放在独立的服务器上，也是目前主流推崇的方案；
@@ -142,14 +142,14 @@ source /etc/profile
 
 #####防火墙
 #停止firewall
-systemctl stop firewalld.service 
- 
+systemctl stop firewalld.service
+
 #开启firewall
 systemctl start firewalld.service
 
 #禁止firewall开机启动
-systemctl disable firewalld.service 
- 
+systemctl disable firewalld.service
+
 #查看默认防火墙状态（关闭后显示not running，开启后显示running）
 firewall-cmd --state
 # 重启
@@ -170,7 +170,7 @@ firewall-cmd --zone=public --add-port=8847/tcp --permanent
 # 查看进程
 
 ps -ef|grep nacos
-ps -ef|grep nacos
+
 ps -ef|grep nginx
 
 # 一直不能正确启动tomcat的原因是因为环境变量配置错误了，吐血
@@ -185,4 +185,4 @@ export JAVA_HOME CLASSPATH PATH CATALINA_HOME
 
 192.168.153.128
 
-成功启动了nginx，但是不能访问页面，原因是因为使用的是<https://192.168.153.128/，而正确的是http://192.168.153.128/>
+成功启动了 nginx，但是不能访问页面，原因是因为使用的是<https://192.168.153.128/，而正确的是http://192.168.153.128/>
