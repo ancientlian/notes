@@ -15,7 +15,7 @@ docker images -a # 查看拉取
 
 ## 修改部分配置文件
 
-1. 开启密码认证。搜索 `requirepass` 关键字，关掉注释，在关键字后面添加密码。如果公网不加密码验证则会被注入挖矿脚本
+1. 开启密码认证。搜索 `requirepass` 关键字，关掉注释，在关键字后面添加密码。如果公网不加密码验证则会被注入挖矿脚本, 可使用命令 `grep "requirepass" redis.conf`
 2. 注释掉 `·`bind 127.0.0.1`，以允许其他 ip 连接
 3. 关闭保护模式，将 yes 改为 no。允许其他机器连接。`protected-mode no`
 4. daemonize 将 yes 设为 no；不然与 docker -d 冲突，导致容器启动失败
